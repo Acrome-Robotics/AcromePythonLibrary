@@ -13,7 +13,7 @@ class Controller():
     def _read(self, byte_count):
         data = self.ph.read(byte_count)
         if data[0] == self.__class__._HEADER:
-            if self._crc32(data[:-4]) == struct.unpack("<I", data[-4:]):
+            if self._crc32(data[:-4]) == data[-4:]:
                 return data
         return None
 
