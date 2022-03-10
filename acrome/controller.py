@@ -40,6 +40,8 @@ class OneDOF(Controller):
     def set_speed(self, speed):
         if speed != 0:
             self.speed = speed if abs(speed) <= 1000 else 1000 * (speed / abs(speed))
+        else:
+            self.speed = speed
 
     def enable(self, en):
         self.config = (self.config & ~self.__class__._EN_MASK) | (en & self.__class__._EN_MASK)
