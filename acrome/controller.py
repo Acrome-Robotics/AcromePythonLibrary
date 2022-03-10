@@ -62,8 +62,8 @@ class OneDOF(Controller):
         data = super()._read(self.__class__._RECEIVE_COUNT)
         if data is not None:
             if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
-                self.motor_enc = struct.unpack("<H", data[2:4])
-                self.shaft_enc = struct.unpack("<H", data[4:6])
-                self.imu[0] = struct.unpack("<h", data[6:8])
-                self.imu[0] = struct.unpack("<h", data[8:10])
-                self.imu[0] = struct.unpack("<h", data[10:12])
+                self.motor_enc = struct.unpack("<H", data[2:4])[0]
+                self.shaft_enc = struct.unpack("<H", data[4:6])[0]
+                self.imu[0] = struct.unpack("<h", data[6:8])[0]
+                self.imu[1] = struct.unpack("<h", data[8:10])[0]
+                self.imu[2] = struct.unpack("<h", data[10:12])[0]
