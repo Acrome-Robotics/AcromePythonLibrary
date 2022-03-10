@@ -15,3 +15,6 @@ class TestController(unittest.TestCase):
     def test_read(self):
         self.mock.return_value.read.return_value = bytes([0x55, 0x00, 87, 115, 157, 198])
         self.assertEqual(controller.Controller()._read(6), bytes([0x55, 0x00, 87, 115, 157, 198]))
+
+    def test_write(self): #Placeholder test since it is just a wrapper
+        self.assertTrue(True) 
