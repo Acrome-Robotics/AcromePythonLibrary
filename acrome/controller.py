@@ -68,3 +68,30 @@ class OneDOF(Controller):
                 self.imu[0] = struct.unpack("<h", data[6:8])[0]
                 self.imu[1] = struct.unpack("<h", data[8:10])[0]
                 self.imu[2] = struct.unpack("<h", data[10:12])[0]
+
+class BallBeam(Controller):
+    _DEVID = 0xBB
+    _MAX_SERVO_ABS = 1000
+    _RECEIVE_COUNT = 8
+
+    def __init__(self, portname="/dev/serial0"):
+        super().__init__(portname=portname)
+        self.position = 0
+        self.servo = 0
+    
+    def set_servo(self, servo):
+        if servo != 0:
+            self.servo = servo if abs(servo) <= self.__class__._MAX_SERVO_ABS else self.__class__._MAX_SERVO_ABS * (servo / abs(servo))
+        else:
+            self.servo = servo
+    
+    def write(self):
+        data = struct.pack("<BBh", self.__class__._HEADER, self.__class__._DEVID, self.servo)
+        data += self._crc32(data)
+        super()._write(data)
+    
+    def read(self):
+        data = super()._read(self.__class__._RECEIVE_COUNT)
+        if data is not None:
+            if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
+                self.position = struct.unpack("<h", data[2:4])[0]
