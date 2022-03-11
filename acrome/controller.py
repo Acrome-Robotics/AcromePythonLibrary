@@ -95,3 +95,35 @@ class BallBeam(Controller):
         if data is not None:
             if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
                 self.position = struct.unpack("<h", data[2:4])[0]
+
+class BallBalancingTable(Controller):
+    _DEVID = 0xBC
+    _MAX_SERVO_ABS = 1000
+    _RECEIVE_COUNT = 10
+
+    def __init__(self, portname="/dev/serial0"):
+        super().__init__(portname=portname)
+        self.servo = [0,0]
+        self.position = [0,0]
+
+    def set_servo(self, x, y):
+        if x != 0:
+            self.servo[0] = x if abs(x) <= self.__class__._MAX_SERVO_ABS else self.__class__._MAX_SERVO_ABS * (x / abs(x))
+        else:
+            self.servo[0] = x
+
+        if y != 0:
+            self.servo[1] = y if abs(x) <= self.__class__._MAX_SERVO_ABS else self.__class__._MAX_SERVO_ABS * (y / abs(y))
+        else:
+            self.servo[1] = y
+
+    def write(self):
+        data = struct.pack("<BBhh", self.__class__._HEADER, self.__class__._DEVID, self.servo[0], self.servo[1])
+        data += self._crc32(data)
+        super()._write(data)
+
+    def read(self):
+        data = super()._read(self.__class__._RECEIVE_COUNT)
+        if data is not None:
+            if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
+                self.position = list(struct.unpack("<hh", data[2:6]))
