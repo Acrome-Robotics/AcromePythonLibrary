@@ -27,6 +27,7 @@ class OneDOF(Controller):
     _ENC1_RST_MASK = 1 << 1
     _ENC2_RST_MASK = 1 << 2
     _RECEIVE_COUNT = 16
+    _MAX_SPEED_ABS = 1000
 
     def __init__(self, portname="/dev/serial0"):
         super().__init__(portname=portname)
@@ -39,7 +40,7 @@ class OneDOF(Controller):
 
     def set_speed(self, speed):
         if speed != 0:
-            self.speed = speed if abs(speed) <= 1000 else 1000 * (speed / abs(speed))
+            self.speed = speed if abs(speed) <= self.__class__._MAX_SPEED_ABS else self.__class__._MAX_SPEED_ABS * (speed / abs(speed))
         else:
             self.speed = speed
 
