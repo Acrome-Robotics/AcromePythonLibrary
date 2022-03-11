@@ -127,3 +127,40 @@ class BallBalancingTable(Controller):
         if data is not None:
             if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
                 self.position = list(struct.unpack("<hh", data[2:6]))
+
+class Stewart(Controller):
+    _DEVID = 0xBE
+    _MAX_MT_ABS = 1000
+    _RECEIVE_COUNT = 24
+
+    def __init__(self, portname="/dev/serial0"):
+        super().__init__(portname=portname)
+        self._en = 0
+        self.motors = [0] * 6
+        self.position = [0] * 6
+        self.imu = [0] * 3
+
+    def enable(self, en):
+        self._en = en & 0x01
+
+    def set_motors(self, motors):
+        if len(motors) != 6:
+            raise Exception("Motors variable must have length of 6")
+        
+        for i, motor in enumerate(motors):
+            if motor != 0:
+                self.motors[i] = motor if abs(motor) <= self.__class__._MAX_MT_ABS else self.__class__._MAX_MT_ABS * (motor / abs(motor))
+            else:
+                self.motors[i] = 0
+
+    def write(self):
+        data = struct.pack("<BBBhhhhhh", self.__class__._HEADER, self.__class__._DEVID, self._en, *self.motors)
+        data += self._crc32(data)
+        super()._write(data)
+
+    def read(self):
+        data = super()._read(self.__class__._RECEIVE_COUNT)
+        if data is not None:
+            if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
+                self.position = list(struct.unpack("<HHHHHH", data[2:14]))
+                self.imu = list(struct.unpack("<hhh", data[14:20]))
