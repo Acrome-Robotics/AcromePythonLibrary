@@ -31,3 +31,15 @@ jobs:
     - name: Test with unittest
       run: |
         python -m unittest
+
+    - name: Install PyPI dependencies
+      run: |
+        pip install build --user
+    - name: Build a binary wheel and a source tarball
+      run: >-
+        python -m
+        build
+        --sdist
+        --wheel
+        --outdir dist/
+        .
