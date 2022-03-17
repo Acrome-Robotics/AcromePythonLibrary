@@ -19,7 +19,7 @@ class TestBallBeam(unittest.TestCase):
             self.bb.set_servo(servo)
             self.assertEqual(self.bb.servo, servo)
         
-    def test_set_speed_invalid_values(self):
+    def test_set_servo_invalid_values(self):
         self.bb.set_servo(99999999)
         self.assertEqual(self.bb.servo, 1000)
 
