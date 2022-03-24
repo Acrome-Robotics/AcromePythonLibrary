@@ -3,5 +3,9 @@ requires = [
     "setuptools>=42",
     "wheel"
 ]
+dependencies = [
+    'pyserial',
+    'crccheck',
+]
 build-backend = "setuptools.build_meta"
 
