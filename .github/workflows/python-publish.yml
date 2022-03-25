@@ -36,7 +36,7 @@ jobs:
         --outdir dist/
         .
     - name: Publish distribution 📦 to Test PyPI
-      continue-on-error: true
+      continue-on-error: ${{ github.event.action == 'released' }}
       uses: pypa/gh-action-pypi-publish@master
       with:
         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
