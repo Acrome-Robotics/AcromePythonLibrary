@@ -130,7 +130,8 @@ class BallBalancingTable(Controller):
 
 class Delta(Controller):
     _DEVID = 0xBD
-    _MAX_MT_ABS = 1000
+    _MAX_MT_POS = 810
+    _MIN_MT_POS = 310
     _RECEIVE_COUNT = 12
     
     def __init__(self, portname="/dev/serial0"):
@@ -147,10 +148,13 @@ class Delta(Controller):
             raise Exception("Motors variable must have length of 6")
         
         for i, motor in enumerate(motors):
-            if motor != 0:
-                self.motors[i] = motor if abs(motor) <= self.__class__._MAX_MT_ABS else self.__class__._MAX_MT_ABS * (motor / abs(motor))
-            else:
-                self.motors[i] = 0
+            if motor <= self.__class__._MAX_MT_POS and motor >= self.__class__._MIN_MT_POS:
+                self.motors[i] = motor
+            else: 
+                if motor >= self.__class__._MAX_MT_POS:
+                    self.motors[i] = self.__class__._MAX_MT_POS
+                else:
+                    self.motors[i] = self.__class__._MIN_MT_POS
 
     def write(self):
         data = struct.pack("<BBBhhh", self.__class__._HEADER, self.__class__._DEVID, self.magnet, *self.motors)

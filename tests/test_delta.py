@@ -3,7 +3,7 @@ import unittest.mock
 from unittest.mock import patch
 from acrome import controller
 
-class TestBallBeam(unittest.TestCase):
+class TestDelta(unittest.TestCase):
     def setUp(self) -> None:
         patcher = patch("acrome.controller.serial.Serial", autospec=True)
         self.mock = patcher.start()
@@ -14,26 +14,26 @@ class TestBallBeam(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_set_servo_valid_values(self):
-        for mt in range(-self.delta.__class__._MAX_MT_ABS, self.delta.__class__._MAX_MT_ABS+1):
+    def test_set_motors_valid_values(self):
+        for mt in range(self.delta.__class__._MIN_MT_POS, self.delta.__class__._MAX_MT_POS):
             self.delta.set_motors([mt] * 3)
             self.assertEqual(self.delta.motors, [mt] * 3)
         
-    def test_set_speed_invalid_values(self):
+    def test_set_motors_invalid_values(self):
         self.delta.set_motors([99999] * 3)
-        self.assertEqual(self.delta.motors, [self.delta.__class__._MAX_MT_ABS] * 3)
+        self.assertEqual(self.delta.motors, [self.delta.__class__._MAX_MT_POS] * 3)
 
         self.delta.set_motors([-99999] * 3)
-        self.assertEqual(self.delta.motors, [-self.delta.__class__._MAX_MT_ABS] * 3)
+        self.assertEqual(self.delta.motors, [self.delta.__class__._MIN_MT_POS] * 3)
 
     def test_write(self):
         self.delta.pick(True)
-        self.delta.set_motors([100,-200,300])
+        self.delta.set_motors([400, 500, 600])
         
         with patch.object(controller.Controller, '_write') as wr:
             self.delta.write()
         
-        wr.assert_called_once_with(bytes([0x55, 0xBD, 0x1, 0x64, 0x0, 0x38, 0xFF, 0x2C, 0x1, 0x71, 0x95, 0x1, 0x89]))
+        wr.assert_called_once_with(bytes([0x55, 0xBD, 0x1, 0x90, 0x1, 0xF4, 0x1, 0x58, 0x2, 0x27, 0xA7, 0x2C, 0x7A]))                     
 
     def test_read(self):
         #POS 317,656,1721
