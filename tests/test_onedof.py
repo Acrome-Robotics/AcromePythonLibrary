@@ -62,11 +62,12 @@ class TestOneDOF(unittest.TestCase):
     def test_read(self):
         #ENC1 27381
         #ENC2 1998
-        #IMU 1138, 1218, 853
-        self.mock.return_value.read.return_value = bytes([0x55, 0xBA, 0xF5, 0x6A, 0xCE, 0x7, 0x72, 0x4, 0xC2, 0x4, 0x55, 0x3, 0xEA, 0x6A, 0xF3, 0x6F])
+        #IMU 117.4, 32.2, 258.8
+        self.mock.return_value.read.return_value = bytes([0x55, 0xBA, 0xF5, 0x6A, 0xCE, 0x7, 0xCD, 0xCC, 0xEA, 0x42, 0xCD, 0xCC, 0x0, 0x42, 0x66, 0x66, 0x81, 0x43, 0xF1, 0x92, 0x3C, 0xCE])
 
         self.dof.read()
 
         self.assertEqual(self.dof.motor_enc, 27381)
         self.assertEqual(self.dof.shaft_enc, 1998)
-        self.assertEqual(self.dof.imu, [1138, 1218, 853])
+        for i, val in enumerate([117.4, 32.2, 258.8]):
+            self.assertAlmostEqual(self.dof.imu[i], val, places=2)

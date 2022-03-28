@@ -26,7 +26,7 @@ class OneDOF(Controller):
     _EN_MASK = 1 << 0
     _ENC1_RST_MASK = 1 << 1
     _ENC2_RST_MASK = 1 << 2
-    _RECEIVE_COUNT = 16
+    _RECEIVE_COUNT = 22
     _MAX_SPEED_ABS = 1000
 
     def __init__(self, portname="/dev/serial0"):
@@ -65,9 +65,7 @@ class OneDOF(Controller):
             if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
                 self.motor_enc = struct.unpack("<H", data[2:4])[0]
                 self.shaft_enc = struct.unpack("<H", data[4:6])[0]
-                self.imu[0] = struct.unpack("<h", data[6:8])[0]
-                self.imu[1] = struct.unpack("<h", data[8:10])[0]
-                self.imu[2] = struct.unpack("<h", data[10:12])[0]
+                self.imu = list(struct.unpack("<fff", data[6:18]))
 
 class BallBeam(Controller):
     _DEVID = 0xBB
