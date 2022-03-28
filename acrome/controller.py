@@ -169,7 +169,7 @@ class Delta(Controller):
 class Stewart(Controller):
     _DEVID = 0xBE
     _MAX_MT_ABS = 1000
-    _RECEIVE_COUNT = 24
+    _RECEIVE_COUNT = 30
 
     def __init__(self, portname="/dev/serial0"):
         super().__init__(portname=portname)
@@ -201,4 +201,4 @@ class Stewart(Controller):
         if data is not None:
             if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
                 self.position = list(struct.unpack("<HHHHHH", data[2:14]))
-                self.imu = list(struct.unpack("<hhh", data[14:20]))
+                self.imu = list(struct.unpack("<fff", data[14:26]))
