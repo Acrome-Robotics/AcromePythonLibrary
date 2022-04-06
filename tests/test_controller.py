@@ -24,3 +24,7 @@ class TestController(unittest.TestCase):
             controller.Controller().reboot()
             wr.assert_called_once_with(bytes([0x55, 0xFC, 0x1, 0x0, 0x0, 0x0, 0x0, 0xA3, 0x41, 0x95, 0xD2]))
     
+    def test_enter_bootloader(self):
+        with patch.object(controller.Controller, '_write') as wr:
+            controller.Controller().enter_bootloader()
+            wr.assert_called_once_with(bytes([0x55, 0xFC, 0x2, 0x0, 0x0, 0x0, 0x0, 0x34, 0xE9, 0x82, 0x9]))

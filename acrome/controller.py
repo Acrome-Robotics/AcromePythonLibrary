@@ -6,6 +6,7 @@ class Controller():
     _ID_INDEX = 1
     _DEVID = 0xFC
     _CMD_REBOOT = (1 << 0)
+    _CMD_BL = (1 << 1)
 
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         self.ph = serial.Serial(port=portname, baudrate=baudrate, timeout=0.1)
@@ -23,6 +24,12 @@ class Controller():
     def reboot(self):
         data = 0
         data = struct.pack("<BBBI", self.__class__._HEADER, self.__class__._DEVID, self.__class__._CMD_REBOOT, data)
+        data += self._crc32(data)
+        self._write(data)
+
+    def enter_bootloader(self):
+        data = 0
+        data = data = struct.pack("<BBBI", self.__class__._HEADER, self.__class__._DEVID, self.__class__._CMD_BL, data)
         data += self._crc32(data)
         self._write(data)
 
