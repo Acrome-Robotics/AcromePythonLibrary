@@ -5,9 +5,11 @@ class Controller():
     _HEADER = 0x55
     _ID_INDEX = 1
     _DEVID = 0xFC
+    _CMD_NULL = 0
     _CMD_REBOOT = (1 << 0)
     _CMD_BL = (1 << 1)
     _PINGID = 0
+    _STATUS_KEY_LIST = ['EEPROM','IMU','Touchscreen Serial','Touchscreen Analog','Delta','Software Version', 'Hardware Version']
 
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         self.ph = serial.Serial(port=portname, baudrate=baudrate, timeout=0.1)
@@ -44,8 +46,23 @@ class Controller():
             if r[self.__class__._ID_INDEX] == self.__class__._PINGID:
                 return True    
         return False
-                
 
+    def get_board_info(self):
+        data = 0
+        data = struct.pack("<BBBI", self.__class__._HEADER, self.__class__._DEVID, self.__class__._CMD_NULL, data)
+        data += self._crc32(data)
+        self._write(data)
+        r = self._read(19)
+        st = dict([])
+        if r is not None:
+            for pos, key in enumerate(self.__class__._STATUS_KEY_LIST):
+                st[key] = bool((r[10] & (1 << pos)) >> pos)
+            ver = list(r)[2:5]
+            st['Software Version'] = "{0}.{1}.{2}".format(*ver[::-1])
+            ver = list(r)[6:9]
+            st['Hardware Version'] = "{0}.{1}.{2}".format(*ver[::-1])
+            return st
+        return None
     
     def _crc32(self, data):
         return CRC32.calc(data).to_bytes(4, 'little')

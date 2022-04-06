@@ -35,4 +35,19 @@ class TestController(unittest.TestCase):
             self.assertTrue(controller.Controller().ping())
             wr.assert_called_once_with(bytes([0x55, 0x0, 0x57, 0x73, 0x9D, 0xC6]))
 
+    def test_get_status(self):
+        self.mock.return_value.read.return_value = bytes([0x55, 0xFC, 0x0, 0x1, 0x0, 0x0, 0x0, 0x1, 0x1, 0x0, 0x15, 0x0, 0x0, 0x0, 0x0, 0xF1, 0x79, 0xD6, 0x6F])
+        with patch.object(controller.Controller, '_write') as wr:
+            st = controller.Controller().get_board_info()
+            wr.assert_called_once_with(bytes([0x55, 0xFC, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2E, 0x26, 0x98, 0x9B]))
         
+        self.assertTrue(isinstance(st, dict))
+        self.assertEqual(len(st.keys()), len(controller.Controller()._STATUS_KEY_LIST))
+        self.assertTrue(list(st.keys()).sort() == controller.Controller()._STATUS_KEY_LIST.sort())
+        self.assertTrue(st['EEPROM'] == True)
+        self.assertTrue(st['IMU'] == False)
+        self.assertTrue(st['Touchscreen Serial'] == True)
+        self.assertTrue(st['Touchscreen Analog'] == False)
+        self.assertTrue(st['Delta'] == True)
+        self.assertTrue(st['Software Version'] == '0.1.0')
+        self.assertTrue(st['Hardware Version'] == '1.1.0')
