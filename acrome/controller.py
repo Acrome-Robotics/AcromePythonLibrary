@@ -7,6 +7,7 @@ class Controller():
     _DEVID = 0xFC
     _CMD_REBOOT = (1 << 0)
     _CMD_BL = (1 << 1)
+    _PINGID = 0
 
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         self.ph = serial.Serial(port=portname, baudrate=baudrate, timeout=0.1)
@@ -33,6 +34,18 @@ class Controller():
         data += self._crc32(data)
         self._write(data)
 
+    def ping(self):
+        data = struct.pack("<BB", self.__class__._HEADER, self.__class__._PINGID)
+        data += self._crc32(data)
+        self._write(data)
+        r = self._read(6)
+        if r is not None:
+            if r[self.__class__._ID_INDEX] == self.__class__._PINGID:
+                return True    
+        return False
+                
+
+    
     def _crc32(self, data):
         return CRC32.calc(data).to_bytes(4, 'little')
 

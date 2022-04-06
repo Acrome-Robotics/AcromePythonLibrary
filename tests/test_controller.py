@@ -28,3 +28,11 @@ class TestController(unittest.TestCase):
         with patch.object(controller.Controller, '_write') as wr:
             controller.Controller().enter_bootloader()
             wr.assert_called_once_with(bytes([0x55, 0xFC, 0x2, 0x0, 0x0, 0x0, 0x0, 0x34, 0xE9, 0x82, 0x9]))
+
+    def test_ping(self):
+        self.mock.return_value.read.return_value = bytes([0x55, 0x0, 0x57, 0x73, 0x9D, 0xC6])
+        with patch.object(controller.Controller, '_write') as wr:
+            self.assertTrue(controller.Controller().ping())
+            wr.assert_called_once_with(bytes([0x55, 0x0, 0x57, 0x73, 0x9D, 0xC6]))
+
+        
