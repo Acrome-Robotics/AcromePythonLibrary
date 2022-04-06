@@ -5,6 +5,7 @@ class Controller():
     _HEADER = 0x55
     _ID_INDEX = 1
     _DEVID = 0xFC
+    _CMD_REBOOT = (1 << 0)
 
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         self.ph = serial.Serial(port=portname, baudrate=baudrate, timeout=0.1)
@@ -18,6 +19,12 @@ class Controller():
             if self._crc32(data[:-4]) == data[-4:]:
                 return data
         return None
+
+    def reboot(self):
+        data = 0
+        data = struct.pack("<BBBI", self.__class__._HEADER, self.__class__._DEVID, self.__class__._CMD_REBOOT, data)
+        data += self._crc32(data)
+        self._write(data)
 
     def _crc32(self, data):
         return CRC32.calc(data).to_bytes(4, 'little')
