@@ -4,6 +4,7 @@ import struct
 class Controller():
     _HEADER = 0x55
     _ID_INDEX = 1
+    _DEVID = 0xFC
 
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         self.ph = serial.Serial(port=portname, baudrate=baudrate, timeout=0.1)
