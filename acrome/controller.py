@@ -5,8 +5,8 @@ class Controller():
     _HEADER = 0x55
     _ID_INDEX = 1
 
-    def __init__(self, portname="/dev/serial0"):
-        self.ph = serial.Serial(port=portname, baudrate=115200, timeout=0.1)
+    def __init__(self, portname="/dev/serial0", baudrate=115200):
+        self.ph = serial.Serial(port=portname, baudrate=baudrate, timeout=0.1)
     
     def _write(self, data):
         self.ph.write(data)
@@ -29,8 +29,8 @@ class OneDOF(Controller):
     _RECEIVE_COUNT = 22
     _MAX_SPEED_ABS = 1000
 
-    def __init__(self, portname="/dev/serial0"):
-        super().__init__(portname=portname)
+    def __init__(self, portname="/dev/serial0", baudrate=115200):
+        super().__init__(portname=portname, baudrate=baudrate)
         self.config = 0
         self.speed = 0
         self.angle = 0
@@ -72,8 +72,8 @@ class BallBeam(Controller):
     _MAX_SERVO_ABS = 1000
     _RECEIVE_COUNT = 8
 
-    def __init__(self, portname="/dev/serial0"):
-        super().__init__(portname=portname)
+    def __init__(self, portname="/dev/serial0", baudrate=115200):
+        super().__init__(portname=portname, baudrate=baudrate)
         self.position = 0
         self.servo = 0
     
@@ -99,8 +99,8 @@ class BallBalancingTable(Controller):
     _MAX_SERVO_ABS = 1000
     _RECEIVE_COUNT = 10
 
-    def __init__(self, portname="/dev/serial0"):
-        super().__init__(portname=portname)
+    def __init__(self, portname="/dev/serial0", baudrate=115200):
+        super().__init__(portname=portname, baudrate=baudrate)
         self.servo = [0,0]
         self.position = [0,0]
 
@@ -132,8 +132,8 @@ class Delta(Controller):
     _MIN_MT_POS = 310
     _RECEIVE_COUNT = 12
     
-    def __init__(self, portname="/dev/serial0"):
-        super().__init__(portname=portname)
+    def __init__(self, portname="/dev/serial0", baudrate=115200):
+        super().__init__(portname=portname, baudrate=baudrate)
         self.magnet = 0
         self.motors = [0] * 3
         self.position = [0] * 3
@@ -171,8 +171,8 @@ class Stewart(Controller):
     _MAX_MT_ABS = 1000
     _RECEIVE_COUNT = 30
 
-    def __init__(self, portname="/dev/serial0"):
-        super().__init__(portname=portname)
+    def __init__(self, portname="/dev/serial0", baudrate=115200):
+        super().__init__(portname=portname, baudrate=baudrate)
         self._en = 0
         self.motors = [0] * 6
         self.position = [0] * 6
