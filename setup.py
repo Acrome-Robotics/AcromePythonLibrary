@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
 	name="acrome",
-	version="0.0.4",
+	version="0.1.0",
 	author="Umut Ediz",
 	author_email="umutediz@acrome.net",
 	description="Hardware abstraction library for Acrome Robotics products",
