@@ -9,28 +9,28 @@ class TestBallBeam(unittest.TestCase):
         self.mock = patcher.start()
         self.addCleanup(patcher.stop)
         self.mock.reset_mock()
-        self.bb = controller.BallBeam()
+        self.dev = controller.BallBeam()
 
     def tearDown(self):
         pass
 
     def test_set_servo_valid_values(self):
         for servo in range(-1000,1000+1):
-            self.bb.set_servo(servo)
-            self.assertEqual(self.bb.servo, servo)
+            self.dev.set_servo(servo)
+            self.assertEqual(self.dev.servo, servo)
         
     def test_set_servo_invalid_values(self):
-        self.bb.set_servo(99999999)
-        self.assertEqual(self.bb.servo, 1000)
+        self.dev.set_servo(99999999)
+        self.assertEqual(self.dev.servo, 1000)
 
-        self.bb.set_servo(-99999999)
-        self.assertEqual(self.bb.servo, -1000)
+        self.dev.set_servo(-99999999)
+        self.assertEqual(self.dev.servo, -1000)
 
     def test_write(self):
-        self.bb.set_servo(700)
+        self.dev.set_servo(700)
         
         with patch.object(controller.Controller, '_writebus') as wr:
-            self.bb._write()
+            self.dev._write()
         
         wr.assert_called_once_with(bytes([0x55, 0xBB, 0xBC, 0x2, 0xA6, 0x10, 0x6E, 0xF3]))
 
@@ -38,6 +38,6 @@ class TestBallBeam(unittest.TestCase):
         #POS 1028
         self.mock.return_value.read.return_value = bytes([0x55, 0xBB, 0x4, 0x4, 0xEB, 0x6B, 0xDE, 0xD1])
 
-        self.bb._read()
+        self.dev._read()
 
-        self.assertEqual(self.bb.position, 1028)
+        self.assertEqual(self.dev.position, 1028)
