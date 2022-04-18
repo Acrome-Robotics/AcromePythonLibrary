@@ -82,8 +82,8 @@ class OneDOF(Controller):
 
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         super().__init__(portname=portname, baudrate=baudrate)
-        self.config = 0
-        self.speed = 0
+        self.__config = 0
+        self.__speed = 0
         self.angle = 0
         self.motor_enc = 0
         self.shaft_enc = 0
@@ -91,24 +91,24 @@ class OneDOF(Controller):
 
     def set_speed(self, speed):
         if speed != 0:
-            self.speed = speed if abs(speed) <= self.__class__._MAX_SPEED_ABS else self.__class__._MAX_SPEED_ABS * (speed / abs(speed))
+            self.__speed = speed if abs(speed) <= self.__class__._MAX_SPEED_ABS else self.__class__._MAX_SPEED_ABS * (speed / abs(speed))
         else:
-            self.speed = speed
+            self.__speed = speed
 
     def enable(self, en):
-        self.config = (self.config & ~self.__class__._EN_MASK) | (en & self.__class__._EN_MASK)
+        self.__config = (self.__config & ~self.__class__._EN_MASK) | (en & self.__class__._EN_MASK)
 
     def reset_encoder_mt(self):
-        self.config |= self.__class__._ENC1_RST_MASK
+        self.__config |= self.__class__._ENC1_RST_MASK
 
     def reset_encoder_shaft(self):
-        self.config |= self.__class__._ENC2_RST_MASK
+        self.__config |= self.__class__._ENC2_RST_MASK
     
     def _write(self):
-        data = struct.pack("<BBBh", self.__class__._HEADER, self.__class__._DEVID, self.config, self.speed)
+        data = struct.pack("<BBBh", self.__class__._HEADER, self.__class__._DEVID, self.__config, self.__speed)
         data += self._crc32(data)
         super()._writebus(data)
-        self.config &= self.__class__._EN_MASK
+        self.__config &= self.__class__._EN_MASK
 
     def _read(self):
         data = super()._readbus(self.__class__._RECEIVE_COUNT)

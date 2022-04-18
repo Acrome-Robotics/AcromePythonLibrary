@@ -17,35 +17,35 @@ class TestOneDOF(unittest.TestCase):
     def test_set_speed_valid_values(self):
         for speed in range(-1000,1000+1):
             self.dev.set_speed(speed)
-            self.assertEqual(self.dev.speed, speed)
+            self.assertEqual(self.dev._OneDOF__speed, speed)
 
     def test_set_speed_invalid_values(self):
         self.dev.set_speed(99999999)
-        self.assertEqual(self.dev.speed, 1000)
+        self.assertEqual(self.dev._OneDOF__speed, 1000)
 
         self.dev.set_speed(-99999999)
-        self.assertEqual(self.dev.speed, -1000)
+        self.assertEqual(self.dev._OneDOF__speed, -1000)
 
     def test_set_enable(self):
-        first_config = self.dev.config
+        first_config = self.dev._OneDOF__config
         self.dev.enable(1)
-        self.assertEqual(self.dev.config, first_config | self.dev.__class__._EN_MASK)
+        self.assertEqual(self.dev._OneDOF__config, first_config | self.dev.__class__._EN_MASK)
 
     def test_reset_enable(self):
-        self.dev.config |= self.dev._EN_MASK
-        first_config = self.dev.config
+        self.dev._OneDOF__config |= self.dev._EN_MASK
+        first_config = self.dev._OneDOF__config
         self.dev.enable(False)
-        self.assertEqual(self.dev.config, first_config & ~self.dev._EN_MASK)
+        self.assertEqual(self.dev._OneDOF__config, first_config & ~self.dev._EN_MASK)
         
     def test_reset_encoder(self):
-        first_config = self.dev.config
+        first_config = self.dev._OneDOF__config
         self.dev.reset_encoder_mt()
-        self.assertEqual(self.dev.config, first_config | self.dev._ENC1_RST_MASK)
-        self.dev.config = 0
+        self.assertEqual(self.dev._OneDOF__config, first_config | self.dev._ENC1_RST_MASK)
+        self.dev._OneDOF__config = 0
         
-        first_config = self.dev.config
+        first_config = self.dev._OneDOF__config
         self.dev.reset_encoder_shaft()
-        self.assertEqual(self.dev.config, first_config | self.dev._ENC2_RST_MASK)
+        self.assertEqual(self.dev._OneDOF__config, first_config | self.dev._ENC2_RST_MASK)
     
     def test_write(self):
         self.dev.enable(1)
@@ -57,7 +57,7 @@ class TestOneDOF(unittest.TestCase):
         
         wr.assert_called_once_with(bytes([0x55, 0xBA, 0x03, 0xF4, 0x01, 0x2A, 0x64, 0xAE, 0xE5]))
 
-        self.assertEqual(self.dev.config, self.dev._EN_MASK)
+        self.assertEqual(self.dev._OneDOF__config, self.dev._EN_MASK)
         
     def test_read(self):
         #ENC1 27381
