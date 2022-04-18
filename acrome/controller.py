@@ -223,13 +223,13 @@ class Stewart(Controller):
 
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         super().__init__(portname=portname, baudrate=baudrate)
-        self._en = 0
-        self.motors = [0] * 6
+        self.__en = 0
+        self.__motors = [0] * 6
         self.position = [0] * 6
         self.imu = [0] * 3
 
     def enable(self, en):
-        self._en = en & 0x01
+        self.__en = en & 0x01
 
     def set_motors(self, motors):
         if len(motors) != 6:
@@ -237,12 +237,12 @@ class Stewart(Controller):
         
         for i, motor in enumerate(motors):
             if motor != 0:
-                self.motors[i] = motor if abs(motor) <= self.__class__._MAX_MT_ABS else self.__class__._MAX_MT_ABS * (motor / abs(motor))
+                self.__motors[i] = motor if abs(motor) <= self.__class__._MAX_MT_ABS else self.__class__._MAX_MT_ABS * (motor / abs(motor))
             else:
-                self.motors[i] = 0
+                self.__motors[i] = 0
 
     def _write(self):
-        data = struct.pack("<BBBhhhhhh", self.__class__._HEADER, self.__class__._DEVID, self._en, *self.motors)
+        data = struct.pack("<BBBhhhhhh", self.__class__._HEADER, self.__class__._DEVID, self.__en, *self.__motors)
         data += self._crc32(data)
         super()._writebus(data)
 
