@@ -53,4 +53,4 @@ class TestController(unittest.TestCase):
         self.assertTrue(st['Hardware Version'] == '1.1.0')
 
     def test_update(self):
-        controller.Controller().update()
+        self.assertRaises(NotImplementedError, controller.Controller().update)
