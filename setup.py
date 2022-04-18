@@ -22,5 +22,5 @@ setuptools.setup(
 	],
 	packages=setuptools.find_packages(exclude=['tests', 'test']),
 	install_requires=["pyserial", "crccheck"],
-	python_requires=">=3.0"
+	python_requires=">=3.6"
 )
