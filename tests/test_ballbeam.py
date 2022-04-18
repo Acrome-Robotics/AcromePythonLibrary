@@ -17,14 +17,14 @@ class TestBallBeam(unittest.TestCase):
     def test_set_servo_valid_values(self):
         for servo in range(-1000,1000+1):
             self.dev.set_servo(servo)
-            self.assertEqual(self.dev.servo, servo)
+            self.assertEqual(self.dev._BallBeam__servo, servo)
         
     def test_set_servo_invalid_values(self):
         self.dev.set_servo(99999999)
-        self.assertEqual(self.dev.servo, 1000)
+        self.assertEqual(self.dev._BallBeam__servo, 1000)
 
         self.dev.set_servo(-99999999)
-        self.assertEqual(self.dev.servo, -1000)
+        self.assertEqual(self.dev._BallBeam__servo, -1000)
 
     def test_write(self):
         self.dev.set_servo(700)

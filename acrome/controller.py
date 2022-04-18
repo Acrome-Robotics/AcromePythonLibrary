@@ -126,16 +126,16 @@ class BallBeam(Controller):
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         super().__init__(portname=portname, baudrate=baudrate)
         self.position = 0
-        self.servo = 0
+        self.__servo = 0
     
     def set_servo(self, servo):
         if servo != 0:
-            self.servo = servo if abs(servo) <= self.__class__._MAX_SERVO_ABS else self.__class__._MAX_SERVO_ABS * (servo / abs(servo))
+            self.__servo = servo if abs(servo) <= self.__class__._MAX_SERVO_ABS else self.__class__._MAX_SERVO_ABS * (servo / abs(servo))
         else:
-            self.servo = servo
+            self.__servo = servo
     
     def _write(self):
-        data = struct.pack("<BBh", self.__class__._HEADER, self.__class__._DEVID, self.servo)
+        data = struct.pack("<BBh", self.__class__._HEADER, self.__class__._DEVID, self.__servo)
         data += self._crc32(data)
         super()._writebus(data)
     
