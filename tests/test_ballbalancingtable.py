@@ -20,18 +20,18 @@ class TestBallBalancingTable(unittest.TestCase):
         
         for x in range(-self.dev.__class__._MAX_SERVO_ABS,self.dev.__class__._MAX_SERVO_ABS+1):
             self.dev.set_servo(x, y)
-            self.assertEqual(self.dev.servo, [x,y])
+            self.assertEqual(self.dev._BallBalancingTable__servo, [x,y])
         
         for y in range(-self.dev.__class__._MAX_SERVO_ABS,self.dev.__class__._MAX_SERVO_ABS+1):
             self.dev.set_servo(x, y)
-            self.assertEqual(self.dev.servo, [x,y])
+            self.assertEqual(self.dev._BallBalancingTable__servo, [x,y])
         
     def test_set_speed_invalid_values(self):
         self.dev.set_servo(99999, 99999)
-        self.assertEqual(self.dev.servo, [self.dev.__class__._MAX_SERVO_ABS,self.dev.__class__._MAX_SERVO_ABS])
+        self.assertEqual(self.dev._BallBalancingTable__servo, [self.dev.__class__._MAX_SERVO_ABS,self.dev.__class__._MAX_SERVO_ABS])
 
         self.dev.set_servo(-99999, -99999)
-        self.assertEqual(self.dev.servo, [-self.dev.__class__._MAX_SERVO_ABS,-self.dev.__class__._MAX_SERVO_ABS])
+        self.assertEqual(self.dev._BallBalancingTable__servo, [-self.dev.__class__._MAX_SERVO_ABS,-self.dev.__class__._MAX_SERVO_ABS])
 
     def test_write(self):
         self.dev.set_servo(700,300)

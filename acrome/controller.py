@@ -152,22 +152,22 @@ class BallBalancingTable(Controller):
 
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         super().__init__(portname=portname, baudrate=baudrate)
-        self.servo = [0,0]
+        self.__servo = [0,0]
         self.position = [0,0]
 
     def set_servo(self, x, y):
         if x != 0:
-            self.servo[0] = x if abs(x) <= self.__class__._MAX_SERVO_ABS else self.__class__._MAX_SERVO_ABS * (x / abs(x))
+            self.__servo[0] = x if abs(x) <= self.__class__._MAX_SERVO_ABS else self.__class__._MAX_SERVO_ABS * (x / abs(x))
         else:
-            self.servo[0] = x
+            self.__servo[0] = x
 
         if y != 0:
-            self.servo[1] = y if abs(x) <= self.__class__._MAX_SERVO_ABS else self.__class__._MAX_SERVO_ABS * (y / abs(y))
+            self.__servo[1] = y if abs(x) <= self.__class__._MAX_SERVO_ABS else self.__class__._MAX_SERVO_ABS * (y / abs(y))
         else:
-            self.servo[1] = y
+            self.__servo[1] = y
 
     def _write(self):
-        data = struct.pack("<BBhh", self.__class__._HEADER, self.__class__._DEVID, self.servo[0], self.servo[1])
+        data = struct.pack("<BBhh", self.__class__._HEADER, self.__class__._DEVID, self.__servo[0], self.__servo[1])
         data += self._crc32(data)
         super()._writebus(data)
 
