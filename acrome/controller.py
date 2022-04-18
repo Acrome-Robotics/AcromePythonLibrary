@@ -68,9 +68,11 @@ class Controller():
         return CRC32.calc(data).to_bytes(4, 'little')
     
     def update(self):
-        if not isinstance(self, Controller):
+        if self.__class__ is not Controller:
             self._write()
             return self._read()
+        else:
+            raise NotImplementedError
 
 class OneDOF(Controller):
     _DEVID = 0xBA

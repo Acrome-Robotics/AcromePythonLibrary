@@ -59,13 +59,13 @@ class TestStewart(unittest.TestCase):
             self.assertAlmostEqual(self.dev.imu[i], val, places=2)
 
     def test_update(self):
-        self.dev.update()
         
         with patch.object(self.dev.__class__, '_write') as wr:
-            self.dev._write()
+            self.dev.update()
             wr.assert_called()
 
         with patch.object(self.dev.__class__, '_read') as rd:
-            self.dev._read()
+            self.dev.update()
             rd.assert_called()
+            
         

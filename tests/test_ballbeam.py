@@ -43,13 +43,12 @@ class TestBallBeam(unittest.TestCase):
         self.assertEqual(self.dev.position, 1028)
     
     def test_update(self):
-        self.dev.update()
         
         with patch.object(self.dev.__class__, '_write') as wr:
-            self.dev._write()
+            self.dev.update()
             wr.assert_called()
 
         with patch.object(self.dev.__class__, '_read') as rd:
-            self.dev._read()
+            self.dev.update()
             rd.assert_called()
             
