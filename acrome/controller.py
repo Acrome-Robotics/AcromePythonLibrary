@@ -185,12 +185,12 @@ class Delta(Controller):
     
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         super().__init__(portname=portname, baudrate=baudrate)
-        self.magnet = 0
-        self.motors = [0] * 3
+        self.__magnet = 0
+        self.__motors = [0] * 3
         self.position = [0] * 3
 
     def pick(self, magnet):
-        self.magnet = magnet & 0x01
+        self.__magnet = magnet & 0x01
 
     def set_motors(self, motors):
         if len(motors) != 3:
@@ -198,15 +198,15 @@ class Delta(Controller):
         
         for i, motor in enumerate(motors):
             if motor <= self.__class__._MAX_MT_POS and motor >= self.__class__._MIN_MT_POS:
-                self.motors[i] = motor
+                self.__motors[i] = motor
             else: 
                 if motor >= self.__class__._MAX_MT_POS:
-                    self.motors[i] = self.__class__._MAX_MT_POS
+                    self.__motors[i] = self.__class__._MAX_MT_POS
                 else:
-                    self.motors[i] = self.__class__._MIN_MT_POS
+                    self.__motors[i] = self.__class__._MIN_MT_POS
 
     def _write(self):
-        data = struct.pack("<BBBhhh", self.__class__._HEADER, self.__class__._DEVID, self.magnet, *self.motors)
+        data = struct.pack("<BBBhhh", self.__class__._HEADER, self.__class__._DEVID, self.__magnet, *self.__motors)
         data += self._crc32(data)
         super()._writebus(data)
 

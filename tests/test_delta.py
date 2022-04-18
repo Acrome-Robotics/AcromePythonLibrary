@@ -17,14 +17,14 @@ class TestDelta(unittest.TestCase):
     def test_set_motors_valid_values(self):
         for mt in range(self.dev.__class__._MIN_MT_POS, self.dev.__class__._MAX_MT_POS):
             self.dev.set_motors([mt] * 3)
-            self.assertEqual(self.dev.motors, [mt] * 3)
+            self.assertEqual(self.dev._Delta__motors, [mt] * 3)
         
     def test_set_motors_invalid_values(self):
         self.dev.set_motors([99999] * 3)
-        self.assertEqual(self.dev.motors, [self.dev.__class__._MAX_MT_POS] * 3)
+        self.assertEqual(self.dev._Delta__motors, [self.dev.__class__._MAX_MT_POS] * 3)
 
         self.dev.set_motors([-99999] * 3)
-        self.assertEqual(self.dev.motors, [self.dev.__class__._MIN_MT_POS] * 3)
+        self.assertEqual(self.dev._Delta__motors, [self.dev.__class__._MIN_MT_POS] * 3)
 
     def test_write(self):
         self.dev.pick(True)
