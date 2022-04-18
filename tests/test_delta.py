@@ -26,6 +26,12 @@ class TestDelta(unittest.TestCase):
         self.dev.set_motors([-99999] * 3)
         self.assertEqual(self.dev._Delta__motors, [self.dev.__class__._MIN_MT_POS] * 3)
 
+    def test_pick(self):
+        self.dev.pick(True)
+        self.assertTrue(self.dev._Delta__magnet == 1)
+        self.dev.pick(False)
+        self.assertTrue(self.dev._Delta__magnet == 0)
+
     def test_write(self):
         self.dev.pick(True)
         self.dev.set_motors([400, 500, 600])
