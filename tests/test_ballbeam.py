@@ -29,8 +29,8 @@ class TestBallBeam(unittest.TestCase):
     def test_write(self):
         self.bb.set_servo(700)
         
-        with patch.object(controller.Controller, '_write') as wr:
-            self.bb.write()
+        with patch.object(controller.Controller, '_writebus') as wr:
+            self.bb._write()
         
         wr.assert_called_once_with(bytes([0x55, 0xBB, 0xBC, 0x2, 0xA6, 0x10, 0x6E, 0xF3]))
 
@@ -38,6 +38,6 @@ class TestBallBeam(unittest.TestCase):
         #POS 1028
         self.mock.return_value.read.return_value = bytes([0x55, 0xBB, 0x4, 0x4, 0xEB, 0x6B, 0xDE, 0xD1])
 
-        self.bb.read()
+        self.bb._read()
 
         self.assertEqual(self.bb.position, 1028)

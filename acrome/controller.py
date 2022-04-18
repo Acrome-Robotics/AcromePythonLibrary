@@ -9,15 +9,15 @@ class Controller():
     _CMD_REBOOT = (1 << 0)
     _CMD_BL = (1 << 1)
     _PINGID = 0
-    _STATUS_KEY_LIST = ['EEPROM','IMU','Touchscreen Serial','Touchscreen Analog','Delta','Software Version', 'Hardware Version']
+    _STATUS_KEY_LIST = ['EEPROM', 'IMU', 'Touchscreen Serial', 'Touchscreen Analog', 'Delta', 'Software Version', 'Hardware Version']
 
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         self.ph = serial.Serial(port=portname, baudrate=baudrate, timeout=0.1)
     
-    def _write(self, data):
+    def _writebus(self, data):
         self.ph.write(data)
     
-    def _read(self, byte_count):
+    def _readbus(self, byte_count):
         data = self.ph.read(byte_count)
         if len(data) > 0:
             if data[0] == self.__class__._HEADER:
@@ -29,19 +29,19 @@ class Controller():
         data = 0
         data = struct.pack("<BBBI", self.__class__._HEADER, self.__class__._DEVID, self.__class__._CMD_REBOOT, data)
         data += self._crc32(data)
-        self._write(data)
+        self._writebus(data)
 
     def enter_bootloader(self):
         data = 0
         data = data = struct.pack("<BBBI", self.__class__._HEADER, self.__class__._DEVID, self.__class__._CMD_BL, data)
         data += self._crc32(data)
-        self._write(data)
+        self._writebus(data)
 
     def ping(self):
         data = struct.pack("<BB", self.__class__._HEADER, self.__class__._PINGID)
         data += self._crc32(data)
-        self._write(data)
-        r = self._read(6)
+        self._writebus(data)
+        r = self._readbus(6)
         if r is not None:
             if r[self.__class__._ID_INDEX] == self.__class__._PINGID:
                 return True    
@@ -51,8 +51,8 @@ class Controller():
         data = 0
         data = struct.pack("<BBBI", self.__class__._HEADER, self.__class__._DEVID, self.__class__._CMD_NULL, data)
         data += self._crc32(data)
-        self._write(data)
-        r = self._read(19)
+        self._writebus(data)
+        r = self._readbus(19)
         st = dict([])
         if r is not None:
             for pos, key in enumerate(self.__class__._STATUS_KEY_LIST):
@@ -66,6 +66,11 @@ class Controller():
     
     def _crc32(self, data):
         return CRC32.calc(data).to_bytes(4, 'little')
+    
+    def update(self):
+        if not isinstance(self, Controller):
+            self._write()
+            return self._read()
 
 class OneDOF(Controller):
     _DEVID = 0xBA
@@ -99,14 +104,14 @@ class OneDOF(Controller):
     def reset_encoder_shaft(self):
         self.config |= self.__class__._ENC2_RST_MASK
     
-    def write(self):
+    def _write(self):
         data = struct.pack("<BBBh", self.__class__._HEADER, self.__class__._DEVID, self.config, self.speed)
         data += self._crc32(data)
-        super()._write(data)
+        super()._writebus(data)
         self.config &= self.__class__._EN_MASK
 
-    def read(self):
-        data = super()._read(self.__class__._RECEIVE_COUNT)
+    def _read(self):
+        data = super()._readbus(self.__class__._RECEIVE_COUNT)
         if data is not None:
             if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
                 self.motor_enc = struct.unpack("<H", data[2:4])[0]
@@ -129,13 +134,13 @@ class BallBeam(Controller):
         else:
             self.servo = servo
     
-    def write(self):
+    def _write(self):
         data = struct.pack("<BBh", self.__class__._HEADER, self.__class__._DEVID, self.servo)
         data += self._crc32(data)
-        super()._write(data)
+        super()._writebus(data)
     
-    def read(self):
-        data = super()._read(self.__class__._RECEIVE_COUNT)
+    def _read(self):
+        data = super()._readbus(self.__class__._RECEIVE_COUNT)
         if data is not None:
             if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
                 self.position = struct.unpack("<h", data[2:4])[0]
@@ -161,13 +166,13 @@ class BallBalancingTable(Controller):
         else:
             self.servo[1] = y
 
-    def write(self):
+    def _write(self):
         data = struct.pack("<BBhh", self.__class__._HEADER, self.__class__._DEVID, self.servo[0], self.servo[1])
         data += self._crc32(data)
-        super()._write(data)
+        super()._writebus(data)
 
-    def read(self):
-        data = super()._read(self.__class__._RECEIVE_COUNT)
+    def _read(self):
+        data = super()._readbus(self.__class__._RECEIVE_COUNT)
         if data is not None:
             if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
                 self.position = list(struct.unpack("<hh", data[2:6]))
@@ -200,17 +205,16 @@ class Delta(Controller):
                 else:
                     self.motors[i] = self.__class__._MIN_MT_POS
 
-    def write(self):
+    def _write(self):
         data = struct.pack("<BBBhhh", self.__class__._HEADER, self.__class__._DEVID, self.magnet, *self.motors)
         data += self._crc32(data)
-        super()._write(data)
+        super()._writebus(data)
 
-    def read(self):
-        data = super()._read(self.__class__._RECEIVE_COUNT)
+    def _read(self):
+        data = super()._readbus(self.__class__._RECEIVE_COUNT)
         if data is not None:
             if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
                 self.position = list(struct.unpack("<HHH", data[2:8]))
-
 
 class Stewart(Controller):
     _DEVID = 0xBE
@@ -237,13 +241,13 @@ class Stewart(Controller):
             else:
                 self.motors[i] = 0
 
-    def write(self):
+    def _write(self):
         data = struct.pack("<BBBhhhhhh", self.__class__._HEADER, self.__class__._DEVID, self._en, *self.motors)
         data += self._crc32(data)
-        super()._write(data)
+        super()._writebus(data)
 
-    def read(self):
-        data = super()._read(self.__class__._RECEIVE_COUNT)
+    def _read(self):
+        data = super()._readbus(self.__class__._RECEIVE_COUNT)
         if data is not None:
             if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
                 self.position = list(struct.unpack("<HHHHHH", data[2:14]))

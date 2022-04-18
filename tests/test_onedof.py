@@ -52,8 +52,8 @@ class TestOneDOF(unittest.TestCase):
         self.dof.set_speed(500)
         self.dof.reset_encoder_mt()
         
-        with patch.object(controller.Controller, '_write') as wr:
-            self.dof.write()
+        with patch.object(controller.Controller, '_writebus') as wr:
+            self.dof._write()
         
         wr.assert_called_once_with(bytes([0x55, 0xBA, 0x03, 0xF4, 0x01, 0x2A, 0x64, 0xAE, 0xE5]))
 
@@ -65,7 +65,7 @@ class TestOneDOF(unittest.TestCase):
         #IMU 117.4, 32.2, 258.8
         self.mock.return_value.read.return_value = bytes([0x55, 0xBA, 0xF5, 0x6A, 0xCE, 0x7, 0xCD, 0xCC, 0xEA, 0x42, 0xCD, 0xCC, 0x0, 0x42, 0x66, 0x66, 0x81, 0x43, 0xF1, 0x92, 0x3C, 0xCE])
 
-        self.dof.read()
+        self.dof._read()
 
         self.assertEqual(self.dof.motor_enc, 27381)
         self.assertEqual(self.dof.shaft_enc, 1998)

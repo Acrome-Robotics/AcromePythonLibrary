@@ -36,8 +36,8 @@ class TestBallBalancingTable(unittest.TestCase):
     def test_write(self):
         self.bbt.set_servo(700,300)
         
-        with patch.object(controller.Controller, '_write') as wr:
-            self.bbt.write()
+        with patch.object(controller.Controller, '_writebus') as wr:
+            self.bbt._write()
         
         wr.assert_called_once_with(bytes([0x55, 0xBC, 0xBC, 0x2, 0x2C, 0x1, 0xD1, 0x42, 0xB3, 0x11]))
 
@@ -45,6 +45,6 @@ class TestBallBalancingTable(unittest.TestCase):
         #POS 250,715
         self.mock.return_value.read.return_value = bytes([0x55, 0xBC, 0xFA, 0x0, 0xCB, 0x2, 0x7, 0x35, 0x1B, 0xDA])
 
-        self.bbt.read()
+        self.bbt._read()
 
         self.assertEqual(self.bbt.position, [250,715])
