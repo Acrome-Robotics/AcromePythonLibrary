@@ -3,42 +3,59 @@ import unittest.mock
 from unittest.mock import patch
 from acrome import controller
 
-class TestBallBeam(unittest.TestCase):
+class TestDelta(unittest.TestCase):
     def setUp(self) -> None:
         patcher = patch("acrome.controller.serial.Serial", autospec=True)
         self.mock = patcher.start()
         self.addCleanup(patcher.stop)
         self.mock.reset_mock()
-        self.delta = controller.Delta()
+        self.dev = controller.Delta()
 
     def tearDown(self):
         pass
 
-    def test_set_servo_valid_values(self):
-        for mt in range(-self.delta.__class__._MAX_MT_ABS, self.delta.__class__._MAX_MT_ABS+1):
-            self.delta.set_motors([mt] * 3)
-            self.assertEqual(self.delta.motors, [mt] * 3)
+    def test_set_motors_valid_values(self):
+        for mt in range(self.dev.__class__._MIN_MT_POS, self.dev.__class__._MAX_MT_POS):
+            self.dev.set_motors([mt] * 3)
+            self.assertEqual(self.dev._Delta__motors, [mt] * 3)
         
-    def test_set_speed_invalid_values(self):
-        self.delta.set_motors([99999] * 3)
-        self.assertEqual(self.delta.motors, [self.delta.__class__._MAX_MT_ABS] * 3)
+    def test_set_motors_invalid_values(self):
+        self.dev.set_motors([99999] * 3)
+        self.assertEqual(self.dev._Delta__motors, [self.dev.__class__._MAX_MT_POS] * 3)
 
-        self.delta.set_motors([-99999] * 3)
-        self.assertEqual(self.delta.motors, [-self.delta.__class__._MAX_MT_ABS] * 3)
+        self.dev.set_motors([-99999] * 3)
+        self.assertEqual(self.dev._Delta__motors, [self.dev.__class__._MIN_MT_POS] * 3)
+
+    def test_pick(self):
+        self.dev.pick(True)
+        self.assertTrue(self.dev._Delta__magnet == 1)
+        self.dev.pick(False)
+        self.assertTrue(self.dev._Delta__magnet == 0)
 
     def test_write(self):
-        self.delta.pick(True)
-        self.delta.set_motors([100,-200,300])
+        self.dev.pick(True)
+        self.dev.set_motors([400, 500, 600])
         
-        with patch.object(controller.Controller, '_write') as wr:
-            self.delta.write()
+        with patch.object(controller.Controller, '_writebus') as wr:
+            self.dev._write()
         
-        wr.assert_called_once_with(bytes([0x55, 0xBD, 0x1, 0x64, 0x0, 0x38, 0xFF, 0x2C, 0x1, 0x71, 0x95, 0x1, 0x89]))
+        wr.assert_called_once_with(bytes([0x55, 0xBD, 0x1, 0x90, 0x1, 0xF4, 0x1, 0x58, 0x2, 0x27, 0xA7, 0x2C, 0x7A]))                     
 
     def test_read(self):
         #POS 317,656,1721
         self.mock.return_value.read.return_value = bytes([0x55, 0xBD, 0x3D, 0x1, 0x90, 0x2, 0xB9, 0x6, 0x1D, 0xCB, 0x83, 0xD6])
     
-        self.delta.read()
+        self.dev._read()
 
-        self.assertEqual(self.delta.position, [317,656,1721])
+        self.assertEqual(self.dev.position, [317,656,1721])
+    
+    def test_update(self):
+        self.dev.update()
+        
+        with patch.object(self.dev.__class__, '_write') as wr:
+            self.dev._write()
+            wr.assert_called()
+
+        with patch.object(self.dev.__class__, '_read') as rd:
+            self.dev._read()
+            rd.assert_called()
