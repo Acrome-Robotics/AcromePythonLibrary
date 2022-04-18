@@ -57,4 +57,15 @@ class TestStewart(unittest.TestCase):
         self.assertEqual(self.dev.position, [50,63,85,117,756,3721])
         for i, val in enumerate([102.3, 217.1, 359.9]):
             self.assertAlmostEqual(self.dev.imu[i], val, places=2)
+
+    def test_update(self):
+        self.dev.update()
+        
+        with patch.object(self.dev.__class__, '_write') as wr:
+            self.dev._write()
+            wr.assert_called()
+
+        with patch.object(self.dev.__class__, '_read') as rd:
+            self.dev._read()
+            rd.assert_called()
         

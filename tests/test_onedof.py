@@ -71,3 +71,14 @@ class TestOneDOF(unittest.TestCase):
         self.assertEqual(self.dev.shaft_enc, 1998)
         for i, val in enumerate([117.4, 32.2, 258.8]):
             self.assertAlmostEqual(self.dev.imu[i], val, places=2)
+    
+    def test_update(self):
+        self.dev.update()
+        
+        with patch.object(self.dev.__class__, '_write') as wr:
+            self.dev._write()
+            wr.assert_called()
+
+        with patch.object(self.dev.__class__, '_read') as rd:
+            self.dev._read()
+            rd.assert_called()

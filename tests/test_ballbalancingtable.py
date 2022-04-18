@@ -48,3 +48,15 @@ class TestBallBalancingTable(unittest.TestCase):
         self.dev._read()
 
         self.assertEqual(self.dev.position, [250,715])
+
+    def test_update(self):
+        self.dev.update()
+        
+        with patch.object(self.dev.__class__, '_write') as wr:
+            self.dev._write()
+            wr.assert_called()
+
+        with patch.object(self.dev.__class__, '_read') as rd:
+            self.dev._read()
+            rd.assert_called()
+            
