@@ -98,4 +98,28 @@ The controller module provides 6 different classes  for interacting with 5 diffe
         
         This attribute returns the current roll, pitch and yaw values in degrees in a form of Python list.
 
-        > **Note:** This attribute is only available on the product that shipped with an BNO055 Abosule Orientation Sensor. Products with MPU6050 IMU is not supported yet and will return 0.
+        > **Note:** This attribute is only available on the product that shipped with an BNO055 Absolute Orientation Sensor. Products with MPU6050 IMU is not supported yet and will return 0.
+
+- ## BallBeam Class
+
+    This class provides an interface with the Acrome Controller board. For basic communication checks and configuration via 4 different methods.
+
+    * ### `__init__(self, portname="/dev/serial0", baudrate=115200)`
+        
+        **`Return:`** *None*
+        
+        This is the constructor of the OneDOF class. Please refer to the Controller class constructor for argument descriptions.
+    * ### `set_servo(self, servo)`
+
+        **`Return:`** *None*
+
+        This method provides an interface to set angle of the servo motor on Ball and Beam. Available range is from -1000 to 1000.
+
+    * ### `update(self)`
+        **`Return:`** *None*
+
+        This method syncronizes the variables both on host computer and hardware side. Should be called prior to read of any attribute or called after any write/set operation to make latest values available immediately.
+
+    * ### `position`
+
+        This attribute returns the current value of the ball position on the beam.
