@@ -123,3 +123,27 @@ The controller module provides 6 different classes  for interacting with 5 diffe
     * #### `position`
 
         This attribute returns the current value of the ball position on the beam.
+
+- ## BallBalancingTable Class
+
+    This class provides an interface with Ball Balancing Table via Acrome Controller.
+
+    * #### `__init__(self, portname="/dev/serial0", baudrate=115200)`
+        
+        **`Return:`** *None*
+        
+        This is the constructor of the OneDOF class. Please refer to the Controller class constructor for argument descriptions.
+    * #### `set_servo(self, x, y)`
+
+        **`Return:`** *None*
+
+        This method provides an interface to set angles of the servo motors on Ball Balancing Table. Available range is from -1000 to 1000 for each axis.
+
+    * #### `update(self)`
+        **`Return:`** *None*
+
+        This method syncronizes the variables both on host computer and hardware side. Should be called prior to read of any attribute or called after any write/set operation to make latest values available immediately.
+
+    * #### `position`
+
+        This attribute returns a list that contains the current coordinates (x, y) of the ball position on the touch screen.
