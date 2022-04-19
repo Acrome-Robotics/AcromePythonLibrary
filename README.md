@@ -108,7 +108,7 @@ The controller module provides 6 different classes  for interacting with 5 diffe
         
         **`Return:`** *None*
         
-        This is the constructor of the OneDOF class. Please refer to the Controller class constructor for argument descriptions.
+        This is the constructor of the BallBeam class. Please refer to the Controller class constructor for argument descriptions.
     * #### `set_servo(self, servo)`
 
         **`Return:`** *None*
@@ -132,7 +132,7 @@ The controller module provides 6 different classes  for interacting with 5 diffe
         
         **`Return:`** *None*
         
-        This is the constructor of the OneDOF class. Please refer to the Controller class constructor for argument descriptions.
+        This is the constructor of the BallBalancingTable class. Please refer to the Controller class constructor for argument descriptions.
     * #### `set_servo(self, x, y)`
 
         **`Return:`** *None*
@@ -156,7 +156,7 @@ The controller module provides 6 different classes  for interacting with 5 diffe
         
         **`Return:`** *None*
         
-        This is the constructor of the OneDOF class. Please refer to the Controller class constructor for argument descriptions.
+        This is the constructor of the Delta class. Please refer to the Controller class constructor for argument descriptions.
     * #### `set_motors(self, motors)`
 
         **`Return:`** *None*
