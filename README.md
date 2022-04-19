@@ -176,3 +176,38 @@ The controller module provides 6 different classes  for interacting with 5 diffe
     * #### `position`
 
         This attribute returns a list of 3 integers that contains the current values of the motor positions. List elements are Motor 1 Position, Motor 2 Position, and Motor 3 Position respectively.
+
+- ## Stewart Class
+
+    This class provides an interface with Stewart Platforms via Acrome Controller.
+
+    * #### `__init__(self, portname="/dev/serial0", baudrate=115200)`
+        
+        **`Return:`** *None*
+        
+        This is the constructor of the Stewart class. Please refer to the Controller class constructor for argument descriptions.
+
+    * #### `enable(self)`
+        **`Return:`** *None*
+
+        This method enables the power stages of the Stewart Platform motors and should be called prior to setting speed.
+    * #### `set_motors(self, motors)`
+
+        **`Return:`** *None*
+
+        This method provides an interface to set speeds of the motors on Stewart Platform. Available range is from -1000 to 1000 for each motor. `motors` argument must be a list of 6 integers.
+    
+    * #### `update(self)`
+        **`Return:`** *None*
+
+        This method syncronizes the variables both on host computer and hardware side. Should be called prior to read of any attribute or called after any write/set operation to make latest values available immediately.
+
+    * #### `position`
+
+        This attribute returns a list of 6 integers that contains the current values of the motor positions. List elements are ordered as starting from Motor 1 Position to Motor 6 Position.
+
+    * #### `imu`
+        
+        This attribute returns the current roll, pitch and yaw values in degrees in a form of Python list.
+
+        > **Note:** This attribute is only available on the product that shipped with an BNO055 Absolute Orientation Sensor. Products with MPU6050 IMU is not supported yet and will return 0.
