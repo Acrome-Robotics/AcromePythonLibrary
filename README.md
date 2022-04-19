@@ -147,3 +147,32 @@ The controller module provides 6 different classes  for interacting with 5 diffe
     * #### `position`
 
         This attribute returns a list that contains the current coordinates (x, y) of the ball position on the touch screen.
+
+- ## Delta Class
+
+    This class provides an interface with Delta Robot via Acrome Controller.
+
+    * #### `__init__(self, portname="/dev/serial0", baudrate=115200)`
+        
+        **`Return:`** *None*
+        
+        This is the constructor of the OneDOF class. Please refer to the Controller class constructor for argument descriptions.
+    * #### `set_motors(self, motors)`
+
+        **`Return:`** *None*
+
+        This method provides an interface to set angles of the motors on Delta Robot. Available range is from 310 to 810 for each motor. `motors` argument must be a list of 3 integers.
+    
+    * #### `pick(self, magnet)`
+        **`Return:`** *None*
+
+        This method controls the state of electromagnet which is attached to the Delta Robot. `magnet` argument is a boolean and when set to `True`, enables the magnet to pick the coin and when set to `False`, disables the magnet to release it.
+
+    * #### `update(self)`
+        **`Return:`** *None*
+
+        This method syncronizes the variables both on host computer and hardware side. Should be called prior to read of any attribute or called after any write/set operation to make latest values available immediately.
+
+    * #### `position`
+
+        This attribute returns a list of 3 integers that contains the current values of the motor positions. List elements are Motor 1 Position, Motor 2 Position, and Motor 3 Position respectively.
