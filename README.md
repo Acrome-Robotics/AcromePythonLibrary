@@ -98,7 +98,7 @@ The controller module provides 6 different classes  for interacting with 5 diffe
         
         This attribute returns the current roll, pitch and yaw values in degrees in a form of Python list.
 
-        > **Note:** This attribute is only available on the product that shipped with an BNO055 Absolute Orientation Sensor. Products with MPU6050 IMU is not supported yet and will return 0.
+        > **Note:** This attribute is only available on the products that shipped with an BNO055 Absolute Orientation Sensor. Products with MPU6050 IMU is not supported yet and will return 0.
 
 - ## BallBeam Class
 
@@ -210,4 +210,4 @@ The controller module provides 6 different classes  for interacting with 5 diffe
         
         This attribute returns the current roll, pitch and yaw values in degrees in a form of Python list.
 
-        > **Note:** This attribute is only available on the product that shipped with an BNO055 Absolute Orientation Sensor. Products with MPU6050 IMU is not supported yet and will return 0.
+        > **Note:** This attribute is only available on the products that shipped with an BNO055 Absolute Orientation Sensor. Products with MPU6050 IMU is not supported yet and will return 0.
