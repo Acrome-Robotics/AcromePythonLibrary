@@ -14,7 +14,7 @@ The controller module provides 6 different classes  for interacting with 5 diffe
 
     This class provides an interface with the Acrome Controller board. For basic communication checks and configuration via 4 different methods.
 
-    * ### `__init__(self, portname="/dev/serial0", baudrate=115200)`
+    * #### `__init__(self, portname="/dev/serial0", baudrate=115200)`
         
         **`Return:`** *None*
         
@@ -24,24 +24,24 @@ The controller module provides 6 different classes  for interacting with 5 diffe
 
         `baudrate` argument must not be changed by the user since different baudrates are not supported by the hardware, yet.
 
-    * ### `ping(self)` 
+    * #### `ping(self)` 
 
         **`Return:`** *boolean*
 
         This method provides a basic ping functionality between the board and the host computer as the name suggests. If the communication succeeded method returns true, otherwise false.
-    * ### `reboot(self)`
+    * #### `reboot(self)`
 
         **`Return:`** *None*
         
         This method immediately reboots the Acrome Controller board when called.
 
-    * ### `enter_bootloader(self)`
+    * #### `enter_bootloader(self)`
     
         **`Return:`** *None*
         
         When this method called, the Acrome Controller board boots into the embedded bootloader to provide a firmware update. When bootloader activated, the board does not respond to any other command rather than specific instruction for bootloader operation.
 
-    * ### `get_board_info(self)`
+    * #### `get_board_info(self)`
 
         **`Return:`** *dict*
 
@@ -52,49 +52,49 @@ The controller module provides 6 different classes  for interacting with 5 diffe
 
     This class provides an interface with the Acrome Controller board. For basic communication checks and configuration via 4 different methods.
 
-    * ### `__init__(self, portname="/dev/serial0", baudrate=115200)`
+    * #### `__init__(self, portname="/dev/serial0", baudrate=115200)`
         
         **`Return:`** *None*
         
         This is the constructor of the OneDOF class. Please refer to the Controller class constructor for argument descriptions.
 
-    * ### `set_speed(self, speed)`
+    * #### `set_speed(self, speed)`
 
         **`Return:`** *None*
 
         This method provides an interface to set speed of the OneDOF motor. Available range is from -1000 to 1000.
 
-    * ### `enable(self)`
+    * #### `enable(self)`
         **`Return:`** *None*
 
         This method enables the power stage of the OneDOF motor and should be called prior to setting speed.
 
-    * ### `reset_encoder_mt(self)`
+    * #### `reset_encoder_mt(self)`
         **`Return:`** *None*
 
         This method resets the encoder of the DC motor on the OneDOF.
 
-    * ### `reset_encoder_shaft(self)`
+    * #### `reset_encoder_shaft(self)`
         **`Return:`** *None*
 
         This method resets the encoder on the shaft of OneDOF.
 
-    * ### `update(self)`
+    * #### `update(self)`
         **`Return:`** *None*
 
         This method syncronizes the variables both on host computer and hardware side. Should be called prior to read of any attribute or called after any write/set operation to make latest values available immediately.
 
-    * ### `motor_enc`
+    * #### `motor_enc`
 
         This attribute returns the current value of encoder on the DC motor.
         
         > **Note:** This attribute might be always 0 according to your product configuration.
 
-    * ### `shaft_enc`
+    * #### `shaft_enc`
 
         This attribute returns the current value of encoder on the OneDOF shaft.
         
-    * ### `imu`
+    * #### `imu`
         
         This attribute returns the current roll, pitch and yaw values in degrees in a form of Python list.
 
@@ -104,22 +104,22 @@ The controller module provides 6 different classes  for interacting with 5 diffe
 
     This class provides an interface with the Acrome Controller board. For basic communication checks and configuration via 4 different methods.
 
-    * ### `__init__(self, portname="/dev/serial0", baudrate=115200)`
+    * #### `__init__(self, portname="/dev/serial0", baudrate=115200)`
         
         **`Return:`** *None*
         
         This is the constructor of the OneDOF class. Please refer to the Controller class constructor for argument descriptions.
-    * ### `set_servo(self, servo)`
+    * #### `set_servo(self, servo)`
 
         **`Return:`** *None*
 
         This method provides an interface to set angle of the servo motor on Ball and Beam. Available range is from -1000 to 1000.
 
-    * ### `update(self)`
+    * #### `update(self)`
         **`Return:`** *None*
 
         This method syncronizes the variables both on host computer and hardware side. Should be called prior to read of any attribute or called after any write/set operation to make latest values available immediately.
 
-    * ### `position`
+    * #### `position`
 
         This attribute returns the current value of the ball position on the beam.
