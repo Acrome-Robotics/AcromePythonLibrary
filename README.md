@@ -50,7 +50,7 @@ The controller module provides 6 different classes  for interacting with 5 diffe
 
 - ## OneDOF Class
 
-    This class provides an interface with the Acrome Controller board. For basic communication checks and configuration via 4 different methods.
+    This class provides an interface with the OneDOF via Acrome Controller.
 
     * #### `__init__(self, portname="/dev/serial0", baudrate=115200)`
         
