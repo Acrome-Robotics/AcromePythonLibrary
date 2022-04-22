@@ -196,7 +196,7 @@ class Delta(Controller):
 
     def set_motors(self, motors):
         if len(motors) != 3:
-            raise Exception("Motors variable must have length of 6")
+            raise Exception("Argument motors must have length of 3")
         
         for i, motor in enumerate(motors):
             if motor <= self.__class__._MAX_MT_POS and motor >= self.__class__._MIN_MT_POS:
@@ -235,7 +235,7 @@ class Stewart(Controller):
 
     def set_motors(self, motors):
         if len(motors) != 6:
-            raise Exception("Motors variable must have length of 6")
+            raise Exception("Argument motors must have length of 6")
         
         for i, motor in enumerate(motors):
             if motor != 0:
