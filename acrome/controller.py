@@ -1,6 +1,9 @@
 import serial
 from crccheck.crc import Crc32Mpeg2 as CRC32
 import struct
+import tempfile
+import requests
+
 class Controller():
     _HEADER = 0x55
     _ID_INDEX = 1
@@ -11,8 +14,11 @@ class Controller():
     _PINGID = 0
     _STATUS_KEY_LIST = ['EEPROM', 'IMU', 'Touchscreen Serial', 'Touchscreen Analog', 'Delta', 'Software Version', 'Hardware Version']
 
+    __release_url = "https://api.github.com/repos/acrome-robotics/Acrome-Controller-Firmware/releases/{version}"
+
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         self.ph = serial.Serial(port=portname, baudrate=baudrate, timeout=0.1)
+        self.__fw_file = ''
     
     def _writebus(self, data):
         self.ph.write(data)
@@ -37,6 +43,35 @@ class Controller():
         data += self._crc32(data)
         self._writebus(data)
 
+    def fetch_fw_binary(self, version='', download_folder=''):
+        if download_folder == '':
+            self.__fw_file = tempfile.NamedTemporaryFile("wb+")
+        
+        if version == '':
+            version='latest'
+        else:
+            version = 'tags/' + version
+        
+        #Get asset list from GitHub repository
+        response = requests.get(url=self.__class__.__release_url.format(version=version))
+        if (response.status_code in [200, 302]):
+            assets = response.json()['assets']
+        
+            asset_dl_url = None
+            for asset in assets:
+                if '.bin' in asset['name']:
+                    asset_dl_url = asset['browser_download_url']
+
+            if asset_dl_url is None:
+                raise Exception("Could not found requested firmware file! Check your connection to GitHub.")
+
+            #Get binary firmware file
+            response = requests.get(asset_dl_url, stream=True)
+            if (response.status_code in [200, 302]):
+                self.__fw_file.write(response.content)
+            else:
+                raise Exception("Could not fetch requested binary file! Check your connection to GitHub.")
+            
     def ping(self):
         data = struct.pack("<BB", self.__class__._HEADER, self.__class__._PINGID)
         data += self._crc32(data)
