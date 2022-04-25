@@ -1,6 +1,7 @@
 import serial
 from crccheck.crc import Crc32Mpeg2 as CRC32
 import struct
+from stm32loader.main import main as stm32loader_main
 import tempfile
 import requests
 
@@ -72,6 +73,15 @@ class Controller():
             else:
                 raise Exception("Could not fetch requested binary file! Check your connection to GitHub.")
             
+    def update_fw_binary(self):
+        self.ph.close() #Close serial port to give full control to the stm32loader
+        
+        args = ['-p', self.ph.portstr, '-e', '-w', '-v', self.__fw_file]
+        stm32loader_main(*args)
+        if (not self.__fw_file.closed):
+            self.__fw_file.close() #This will permanently delete the file
+        self.ph.open()
+
     def ping(self):
         data = struct.pack("<BB", self.__class__._HEADER, self.__class__._PINGID)
         data += self._crc32(data)
