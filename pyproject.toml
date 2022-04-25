@@ -6,6 +6,8 @@ requires = [
 dependencies = [
     'pyserial',
     'crccheck',
+    'stm32loader',
+    'requests'
 ]
 build-backend = "setuptools.build_meta"
 
