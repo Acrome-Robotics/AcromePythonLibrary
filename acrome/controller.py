@@ -51,7 +51,7 @@ class Controller():
         if (response.status_code in [200, 302]):
             return(response.json()['tag_name'])
 
-    def fetch_fw_binary(self, version='', silent=False):
+    def fetch_fw_binary(self, version=''):
         
         self.__fw_file = tempfile.NamedTemporaryFile("wb+")
         
@@ -75,14 +75,8 @@ class Controller():
 
             #Get binary firmware file
             response = requests.get(asset_dl_url, stream=True)
-            if (not silent):
-                progress = ChargingBar('Downloading... ', suffix='%(percent)d%%')
-
             if (response.status_code in [200, 302]):
-                for chunk in response.iter_content(chunk_size=1024):
-                    self.__fw_file.write(chunk)
-                    if (not silent):
-                        progress.next(1024)
+                self.__fw_file.write(response.content)
                 return True
             else:
                 raise Exception("Could not fetch requested binary file! Check your connection to GitHub.")
