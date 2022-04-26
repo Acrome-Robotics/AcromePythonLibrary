@@ -4,6 +4,7 @@ import struct
 from stm32loader.main import main as stm32loader_main
 import tempfile
 import requests
+from progress.bar import ChargingBar
 
 class Controller():
     _HEADER = 0x55
@@ -68,10 +69,16 @@ class Controller():
 
             #Get binary firmware file
             response = requests.get(asset_dl_url, stream=True)
+            progress = ChargingBar('Downloading... ', suffix='%(percent)d%%')
             if (response.status_code in [200, 302]):
-                self.__fw_file.write(response.content)
+                for chunk in response.iter_content(chunk_size=1024):
+                    self.__fw_file.write(chunk)
+                    progress.next(1024)
+                return True
             else:
                 raise Exception("Could not fetch requested binary file! Check your connection to GitHub.")
+        else:
+            raise Exception("Could not found requested firmware files list! Check your connection to GitHub.")
             
     def update_fw_binary(self):
         self.ph.close() #Close serial port to give full control to the stm32loader
