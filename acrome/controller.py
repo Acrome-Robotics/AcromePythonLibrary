@@ -44,9 +44,9 @@ class Controller():
         data += self._crc32(data)
         self._writebus(data)
 
-    def fetch_fw_binary(self, version='', download_folder=''):
-        if download_folder == '':
-            self.__fw_file = tempfile.NamedTemporaryFile("wb+")
+    def fetch_fw_binary(self, version=''):
+        
+        self.__fw_file = tempfile.NamedTemporaryFile("wb+")
         
         if version == '':
             version='latest'
