@@ -45,6 +45,11 @@ class Controller():
         data += self._crc32(data)
         self._writebus(data)
 
+    def get_latest_version(self):
+        response = requests.get(url=self.__class__.__release_url.format(version='latest'))
+        if (response.status_code in [200, 302]):
+            return(response.json()['tag_name'])
+
     def fetch_fw_binary(self, version='', silent=False):
         
         self.__fw_file = tempfile.NamedTemporaryFile("wb+")
