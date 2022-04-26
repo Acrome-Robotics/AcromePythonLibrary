@@ -4,6 +4,7 @@ import struct
 from stm32loader.main import main as stm32loader_main
 import tempfile
 import requests
+import hashlib
 
 class Controller():
     _HEADER = 0x55
@@ -64,21 +65,37 @@ class Controller():
         if (response.status_code in [200, 302]):
             assets = response.json()['assets']
         
-            asset_dl_url = None
+            fw_dl_url = None
+            md5_dl_url = None
             for asset in assets:
                 if '.bin' in asset['name']:
-                    asset_dl_url = asset['browser_download_url']
+                    fw_dl_url = asset['browser_download_url']
+                elif '.md5' in asset['name']:
+                    md5_dl_url = asset['browser_download_url']
 
-            if asset_dl_url is None:
+            if None in [fw_dl_url, md5_dl_url]:
                 raise Exception("Could not found requested firmware file! Check your connection to GitHub.")
 
             #Get binary firmware file
-            response = requests.get(asset_dl_url, stream=True)
+            md5_fw = None
+            response = requests.get(fw_dl_url, stream=True)
             if (response.status_code in [200, 302]):
                 self.__fw_file.write(response.content)
-                return True
+                md5_fw = hashlib.md5(response.content).hexdigest()
             else:
                 raise Exception("Could not fetch requested binary file! Check your connection to GitHub.")
+
+            #Get MD5 file
+            response = requests.get(md5_dl_url, stream=True)
+            if (response.status_code in [200, 302]):
+                md5_retreived = response.text.split(' ')[0]
+                if (md5_fw == md5_retreived):
+                    return True
+                else:
+                    raise Exception("MD5 Mismatch!")
+            else:
+                raise Exception("Could not fetch requested MD5 file! Check your connection to GitHub.")
+
         else:
             raise Exception("Could not found requested firmware files list! Check your connection to GitHub.")
             
