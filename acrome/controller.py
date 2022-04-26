@@ -20,6 +20,7 @@ class Controller():
 
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         self.ph = serial.Serial(port=portname, baudrate=baudrate, timeout=0.1)
+        self.__serial_settings = self.ph.get_settings()
         self.__fw_file = ''
     
     def _writebus(self, data):
@@ -98,7 +99,9 @@ class Controller():
         stm32loader_main(*args)
         if (not self.__fw_file.closed):
             self.__fw_file.close() #This will permanently delete the file
-        self.ph.open()
+
+        self.ph.apply_settings(self.__serial_settings)
+        self.ph.open() #Re-open serial port
 
     def ping(self):
         data = struct.pack("<BB", self.__class__._HEADER, self.__class__._PINGID)
