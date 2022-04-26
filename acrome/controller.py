@@ -4,7 +4,6 @@ import struct
 from stm32loader.main import main as stm32loader_main
 import tempfile
 import requests
-from progress.bar import ChargingBar
 
 class Controller():
     _HEADER = 0x55
