@@ -88,10 +88,13 @@ class Controller():
         else:
             raise Exception("Could not found requested firmware files list! Check your connection to GitHub.")
             
-    def update_fw_binary(self):
+    def update_fw_binary(self, baudrate = 115200):
+        if (baudrate > 115200):
+            baudrate = 115200
+        elif (baudrate < 1200):
+            baudrate = 1200
         self.ph.close() #Close serial port to give full control to the stm32loader
-        
-        args = ['-p', self.ph.portstr, '-e', '-w', '-v', self.__fw_file]
+        args = ['-p', self.ph.portstr, '-b', str(baudrate), '-e', '-w', '-v', self.__fw_file.name]
         stm32loader_main(*args)
         if (not self.__fw_file.closed):
             self.__fw_file.close() #This will permanently delete the file
