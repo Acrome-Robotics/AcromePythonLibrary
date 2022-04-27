@@ -104,6 +104,16 @@ class Controller():
             baudrate = 115200
         elif (baudrate < 1200):
             baudrate = 1200
+
+        try:
+            with open(self.__fw_file, "rb"):
+                pass
+        except FileNotFoundError as e:
+            print("Firmware file must be fetched first!")
+            raise e
+        except Exception as e:
+            raise e
+
         self.ph.close() #Close serial port to give full control to the stm32loader
         args = ['-p', self.ph.portstr, '-b', str(baudrate), '-e', '-w', '-v', self.__fw_file.name]
         stm32loader_main(*args)
