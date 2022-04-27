@@ -40,19 +40,19 @@ The controller module provides 6 different classes  for interacting with 5 diffe
         **`Return:`** *None*
         
         When this method called, the Acrome Controller board boots into the embedded bootloader to provide a firmware update. When bootloader activated, the board does not respond to any other command rather than specific instruction for bootloader operation.
-    * ### `get_latest_version(self)`
+    * #### `get_latest_version(self)`
 
         **`Return:`** *string / None*
 
         This method returns the latest firmware version available as a string with a 'v' suffix. (Example: v0.1.0)
 
-    * ### `fetch_fw_binary(self, version='')`
+    * #### `fetch_fw_binary(self, version='')`
 
         **`Return:`** *boolean*
 
         This method fetches the given firmware version from related repository. When version argument is not given by the user, fetches the latest version available. User must provide version information as a string and with a suffix 'v'. Returns True on success.
 
-    * ### `update_fw_binary(self, baudrate=115200)`
+    * #### `update_fw_binary(self, baudrate=115200)`
 
         **`Return:`** *None*
 
