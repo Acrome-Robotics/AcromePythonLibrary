@@ -1,6 +1,11 @@
 import serial
 from crccheck.crc import Crc32Mpeg2 as CRC32
 import struct
+from stm32loader.main import main as stm32loader_main
+import tempfile
+import requests
+import hashlib
+
 class Controller():
     _HEADER = 0x55
     _ID_INDEX = 1
@@ -11,8 +16,12 @@ class Controller():
     _PINGID = 0
     _STATUS_KEY_LIST = ['EEPROM', 'IMU', 'Touchscreen Serial', 'Touchscreen Analog', 'Delta', 'Software Version', 'Hardware Version']
 
+    __release_url = "https://api.github.com/repos/acrome-robotics/Acrome-Controller-Firmware/releases/{version}"
+
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         self.ph = serial.Serial(port=portname, baudrate=baudrate, timeout=0.1)
+        self.__serial_settings = self.ph.get_settings()
+        self.__fw_file = ''
     
     def _writebus(self, data):
         self.ph.write(data)
@@ -36,6 +45,83 @@ class Controller():
         data = data = struct.pack("<BBBI", self.__class__._HEADER, self.__class__._DEVID, self.__class__._CMD_BL, data)
         data += self._crc32(data)
         self._writebus(data)
+
+    def get_latest_version(self):
+        response = requests.get(url=self.__class__.__release_url.format(version='latest'))
+        if (response.status_code in [200, 302]):
+            return(response.json()['tag_name'])
+
+    def fetch_fw_binary(self, version=''):
+        
+        self.__fw_file = tempfile.NamedTemporaryFile("wb+")
+        
+        if version == '':
+            version='latest'
+        else:
+            version = 'tags/' + version
+        
+        #Get asset list from GitHub repository
+        response = requests.get(url=self.__class__.__release_url.format(version=version))
+        if (response.status_code in [200, 302]):
+            assets = response.json()['assets']
+        
+            fw_dl_url = None
+            md5_dl_url = None
+            for asset in assets:
+                if '.bin' in asset['name']:
+                    fw_dl_url = asset['browser_download_url']
+                elif '.md5' in asset['name']:
+                    md5_dl_url = asset['browser_download_url']
+
+            if None in [fw_dl_url, md5_dl_url]:
+                raise Exception("Could not found requested firmware file! Check your connection to GitHub.")
+
+            #Get binary firmware file
+            md5_fw = None
+            response = requests.get(fw_dl_url, stream=True)
+            if (response.status_code in [200, 302]):
+                self.__fw_file.write(response.content)
+                md5_fw = hashlib.md5(response.content).hexdigest()
+            else:
+                raise Exception("Could not fetch requested binary file! Check your connection to GitHub.")
+
+            #Get MD5 file
+            response = requests.get(md5_dl_url, stream=True)
+            if (response.status_code in [200, 302]):
+                md5_retreived = response.text.split(' ')[0]
+                if (md5_fw == md5_retreived):
+                    return True
+                else:
+                    raise Exception("MD5 Mismatch!")
+            else:
+                raise Exception("Could not fetch requested MD5 file! Check your connection to GitHub.")
+
+        else:
+            raise Exception("Could not found requested firmware files list! Check your connection to GitHub.")
+            
+    def update_fw_binary(self, baudrate = 115200):
+        if (baudrate > 115200):
+            baudrate = 115200
+        elif (baudrate < 1200):
+            baudrate = 1200
+
+        try:
+            with open(self.__fw_file, "rb"):
+                pass
+        except FileNotFoundError as e:
+            print("Firmware file must be fetched first!")
+            raise e
+        except Exception as e:
+            raise e
+
+        self.ph.close() #Close serial port to give full control to the stm32loader
+        args = ['-p', self.ph.portstr, '-b', str(baudrate), '-e', '-w', '-v', self.__fw_file.name]
+        stm32loader_main(*args)
+        if (not self.__fw_file.closed):
+            self.__fw_file.close() #This will permanently delete the file
+
+        self.ph.apply_settings(self.__serial_settings)
+        self.ph.open() #Re-open serial port
 
     def ping(self):
         data = struct.pack("<BB", self.__class__._HEADER, self.__class__._PINGID)
