@@ -9,11 +9,11 @@ import hashlib
 class Controller():
     _HEADER = 0x55
     _ID_INDEX = 1
-    _DEVID = 0xFC
+    _CFG_DEVID = 0xFC
+    _PING_DEVID = 0x00
     _CMD_NULL = 0
     _CMD_REBOOT = (1 << 0)
     _CMD_BL = (1 << 1)
-    _PINGID = 0
     _STATUS_KEY_LIST = ['EEPROM', 'IMU', 'Touchscreen Serial', 'Touchscreen Analog', 'Delta', 'Software Version', 'Hardware Version']
 
     __release_url = "https://api.github.com/repos/acrome-robotics/Acrome-Controller-Firmware/releases/{version}"
@@ -43,13 +43,13 @@ class Controller():
 
     def reboot(self):
         data = 0
-        data = struct.pack("<BBBI", self.__class__._HEADER, self.__class__._DEVID, self.__class__._CMD_REBOOT, data)
+        data = struct.pack("<BBBI", self.__class__._HEADER, self.__class__._CFG_DEVID, self.__class__._CMD_REBOOT, data)
         data += self._crc32(data)
         self._writebus(data)
 
     def enter_bootloader(self):
         data = 0
-        data = data = struct.pack("<BBBI", self.__class__._HEADER, self.__class__._DEVID, self.__class__._CMD_BL, data)
+        data = data = struct.pack("<BBBI", self.__class__._HEADER, self.__class__._CFG_DEVID, self.__class__._CMD_BL, data)
         data += self._crc32(data)
         self._writebus(data)
 
@@ -131,18 +131,18 @@ class Controller():
         self.ph.open() #Re-open serial port
 
     def ping(self):
-        data = struct.pack("<BB", self.__class__._HEADER, self.__class__._PINGID)
+        data = struct.pack("<BB", self.__class__._HEADER, self.__class__._PING_DEVID)
         data += self._crc32(data)
         self._writebus(data)
         r = self._readbus(6)
         if r is not None:
-            if r[self.__class__._ID_INDEX] == self.__class__._PINGID:
+            if r[self.__class__._ID_INDEX] == self.__class__._PING_DEVID:
                 return True
         return False
 
     def get_board_info(self):
         data = 0
-        data = struct.pack("<BBBI", self.__class__._HEADER, self.__class__._DEVID, self.__class__._CMD_NULL, data)
+        data = struct.pack("<BBBI", self.__class__._HEADER, self.__class__._CFG_DEVID, self.__class__._CMD_NULL, data)
         data += self._crc32(data)
         self._writebus(data)
         r = self._readbus(19)
