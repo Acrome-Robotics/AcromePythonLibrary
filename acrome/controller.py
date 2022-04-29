@@ -205,6 +205,8 @@ class OneDOF(Controller):
                 self.motor_enc = struct.unpack("<H", data[2:4])[0]
                 self.shaft_enc = struct.unpack("<H", data[4:6])[0]
                 self.imu = list(struct.unpack("<fff", data[6:18]))
+                return True
+        return False
 
 class BallBeam(Controller):
     _DEVID = 0xBB
@@ -232,6 +234,8 @@ class BallBeam(Controller):
         if data is not None:
             if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
                 self.position = struct.unpack("<h", data[2:4])[0]
+                return True
+        return False
 
 class BallBalancingTable(Controller):
     _DEVID = 0xBC
@@ -264,6 +268,8 @@ class BallBalancingTable(Controller):
         if data is not None:
             if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
                 self.position = list(struct.unpack("<hh", data[2:6]))
+                return True
+        return False
 
 class Delta(Controller):
     _DEVID = 0xBD
@@ -303,6 +309,8 @@ class Delta(Controller):
         if data is not None:
             if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
                 self.position = list(struct.unpack("<HHH", data[2:8]))
+                return True
+        return False
 
 class Stewart(Controller):
     _DEVID = 0xBE
