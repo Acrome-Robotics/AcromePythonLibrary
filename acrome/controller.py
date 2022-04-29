@@ -19,15 +19,15 @@ class Controller():
     __release_url = "https://api.github.com/repos/acrome-robotics/Acrome-Controller-Firmware/releases/{version}"
 
     def __init__(self, portname="/dev/serial0", baudrate=115200):
-        self.ph = serial.Serial(port=portname, baudrate=baudrate, timeout=0.1)
-        self.__serial_settings = self.ph.get_settings()
+        self.__ph = serial.Serial(port=portname, baudrate=baudrate, timeout=0.1)
+        self.__serial_settings = self.__ph.get_settings()
         self.__fw_file = ''
     
     def _writebus(self, data):
-        self.ph.write(data)
+        self.__ph.write(data)
     
     def _readbus(self, byte_count):
-        data = self.ph.read(byte_count)
+        data = self.__ph.read(byte_count)
         if len(data) > 0:
             if data[0] == self.__class__._HEADER:
                 if self._crc32(data[:-4]) == data[-4:]:
@@ -340,3 +340,5 @@ class Stewart(Controller):
             if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
                 self.position = list(struct.unpack("<HHHHHH", data[2:14]))
                 self.imu = list(struct.unpack("<fff", data[14:26]))
+                return True
+        return False
