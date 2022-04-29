@@ -22,6 +22,13 @@ class Controller():
         self.__ph = serial.Serial(port=portname, baudrate=baudrate, timeout=0.1)
         self.__serial_settings = self.__ph.get_settings()
         self.__fw_file = ''
+
+    def __del__(self):
+        if self.__ph.isOpen():
+            self.__ph.flush()
+            self.__ph.flushInput()
+            self.__ph.flushOutput()
+            self.__ph.close()
     
     def _writebus(self, data):
         self.__ph.write(data)
@@ -176,6 +183,9 @@ class OneDOF(Controller):
         self.motor_enc = 0
         self.shaft_enc = 0
         self.imu = [0,0,0]
+    
+    def __del__(self):
+        super().__del__()
 
     def set_speed(self, speed):
         if speed != 0:
@@ -218,6 +228,9 @@ class BallBeam(Controller):
         self.position = 0
         self.__servo = 0
     
+    def __del__(self):
+        super().__del__()
+    
     def set_servo(self, servo):
         if servo != 0:
             self.__servo = servo if abs(servo) <= self.__class__._MAX_SERVO_ABS else self.__class__._MAX_SERVO_ABS * (servo / abs(servo))
@@ -246,6 +259,9 @@ class BallBalancingTable(Controller):
         super().__init__(portname=portname, baudrate=baudrate)
         self.__servo = [0,0]
         self.position = [0,0]
+
+    def __del__(self):
+        super().__del__()
 
     def set_servo(self, x, y):
         if x != 0:
@@ -282,6 +298,9 @@ class Delta(Controller):
         self.__magnet = 0
         self.__motors = [0] * 3
         self.position = [0] * 3
+
+    def __del__(self):
+        super().__del__()
 
     def pick(self, magnet):
         self.__magnet = magnet & 0x01
@@ -323,6 +342,9 @@ class Stewart(Controller):
         self.__motors = [0] * 6
         self.position = [0] * 6
         self.imu = [0] * 3
+
+    def __del__(self):
+        super().__del__()
 
     def enable(self, en):
         self.__en = en & 0x01
