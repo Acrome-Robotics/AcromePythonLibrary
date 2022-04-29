@@ -29,10 +29,10 @@ class Controller():
             self.__ph.flushInput()
             self.__ph.flushOutput()
             self.__ph.close()
-    
+
     def _writebus(self, data):
         self.__ph.write(data)
-    
+
     def _readbus(self, byte_count):
         data = self.__ph.read(byte_count)
         if len(data) > 0:
@@ -59,19 +59,19 @@ class Controller():
             return(response.json()['tag_name'])
 
     def fetch_fw_binary(self, version=''):
-        
+
         self.__fw_file = tempfile.NamedTemporaryFile("wb+")
-        
+
         if version == '':
             version='latest'
         else:
             version = 'tags/' + version
-        
+
         #Get asset list from GitHub repository
         response = requests.get(url=self.__class__.__release_url.format(version=version))
         if (response.status_code in [200, 302]):
             assets = response.json()['assets']
-        
+
             fw_dl_url = None
             md5_dl_url = None
             for asset in assets:
@@ -105,7 +105,7 @@ class Controller():
 
         else:
             raise Exception("Could not found requested firmware files list! Check your connection to GitHub.")
-            
+
     def update_fw_binary(self, baudrate = 115200):
         if (baudrate > 115200):
             baudrate = 115200
@@ -137,7 +137,7 @@ class Controller():
         r = self._readbus(6)
         if r is not None:
             if r[self.__class__._ID_INDEX] == self.__class__._PINGID:
-                return True    
+                return True
         return False
 
     def get_board_info(self):
@@ -156,10 +156,10 @@ class Controller():
             st['Hardware Version'] = "{0}.{1}.{2}".format(*ver[::-1])
             return st
         return None
-    
+
     def _crc32(self, data):
         return CRC32.calc(data).to_bytes(4, 'little')
-    
+
     def update(self):
         if self.__class__ is not Controller:
             self._write()
@@ -183,7 +183,7 @@ class OneDOF(Controller):
         self.motor_enc = 0
         self.shaft_enc = 0
         self.imu = [0,0,0]
-    
+
     def __del__(self):
         super().__del__()
 
@@ -201,7 +201,7 @@ class OneDOF(Controller):
 
     def reset_encoder_shaft(self):
         self.__config |= self.__class__._ENC2_RST_MASK
-    
+
     def _write(self):
         data = struct.pack("<BBBh", self.__class__._HEADER, self.__class__._DEVID, self.__config, self.__speed)
         data += self._crc32(data)
@@ -227,21 +227,21 @@ class BallBeam(Controller):
         super().__init__(portname=portname, baudrate=baudrate)
         self.position = 0
         self.__servo = 0
-    
+
     def __del__(self):
         super().__del__()
-    
+
     def set_servo(self, servo):
         if servo != 0:
             self.__servo = servo if abs(servo) <= self.__class__._MAX_SERVO_ABS else self.__class__._MAX_SERVO_ABS * (servo / abs(servo))
         else:
             self.__servo = servo
-    
+
     def _write(self):
         data = struct.pack("<BBh", self.__class__._HEADER, self.__class__._DEVID, self.__servo)
         data += self._crc32(data)
         super()._writebus(data)
-    
+
     def _read(self):
         data = super()._readbus(self.__class__._RECEIVE_COUNT)
         if data is not None:
@@ -292,7 +292,7 @@ class Delta(Controller):
     _MAX_MT_POS = 810
     _MIN_MT_POS = 310
     _RECEIVE_COUNT = 12
-    
+
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         super().__init__(portname=portname, baudrate=baudrate)
         self.__magnet = 0
@@ -308,11 +308,11 @@ class Delta(Controller):
     def set_motors(self, motors):
         if len(motors) != 3:
             raise Exception("Argument motors must have length of 3")
-        
+
         for i, motor in enumerate(motors):
             if motor <= self.__class__._MAX_MT_POS and motor >= self.__class__._MIN_MT_POS:
                 self.__motors[i] = motor
-            else: 
+            else:
                 if motor >= self.__class__._MAX_MT_POS:
                     self.__motors[i] = self.__class__._MAX_MT_POS
                 else:
@@ -352,7 +352,7 @@ class Stewart(Controller):
     def set_motors(self, motors):
         if len(motors) != 6:
             raise Exception("Argument motors must have length of 6")
-        
+
         for i, motor in enumerate(motors):
             if motor != 0:
                 self.__motors[i] = motor if abs(motor) <= self.__class__._MAX_MT_ABS else self.__class__._MAX_MT_ABS * (motor / abs(motor))
