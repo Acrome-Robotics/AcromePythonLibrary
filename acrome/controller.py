@@ -121,14 +121,14 @@ class Controller():
         except Exception as e:
             raise e
 
-        self.ph.close() #Close serial port to give full control to the stm32loader
-        args = ['-p', self.ph.portstr, '-b', str(baudrate), '-e', '-w', '-v', self.__fw_file.name]
+        self.__ph.close() #Close serial port to give full control to the stm32loader
+        args = ['-p', self.__ph.portstr, '-b', str(baudrate), '-e', '-w', '-v', self.__fw_file.name]
         stm32loader_main(*args)
         if (not self.__fw_file.closed):
             self.__fw_file.close() #This will permanently delete the file
 
-        self.ph.apply_settings(self.__serial_settings)
-        self.ph.open() #Re-open serial port
+        self.__ph.apply_settings(self.__serial_settings)
+        self.__ph.open() #Re-open serial port
 
     def ping(self):
         data = struct.pack("<BB", self.__class__._HEADER, self.__class__._PING_DEVID)
