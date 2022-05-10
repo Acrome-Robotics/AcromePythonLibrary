@@ -21,7 +21,7 @@ class Controller():
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         self.__ph = serial.Serial(port=portname, baudrate=baudrate, timeout=0.1)
         self.__serial_settings = self.__ph.get_settings()
-        self.__fw_file = ''
+        self.__fw_file = None
 
     def __del__(self):
         if self.__ph.isOpen():
@@ -113,11 +113,9 @@ class Controller():
             baudrate = 1200
 
         try:
-            with open(self.__fw_file, "rb"):
-                pass
-        except FileNotFoundError as e:
-            print("Firmware file must be fetched first!")
-            raise e
+            self.__fw_file.read()    
+        except AttributeError:
+            raise Exception("Firmware file must be fetched first!")
         except Exception as e:
             raise e
 
