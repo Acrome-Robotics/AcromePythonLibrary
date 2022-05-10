@@ -21,7 +21,7 @@ class Controller():
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         self.__ph = serial.Serial(port=portname, baudrate=baudrate, timeout=0.1)
         self.__serial_settings = self.__ph.get_settings()
-        self.__fw_file = ''
+        self.__fw_file = None
 
     def __del__(self):
         if self.__ph.isOpen():
@@ -113,22 +113,20 @@ class Controller():
             baudrate = 1200
 
         try:
-            with open(self.__fw_file, "rb"):
-                pass
-        except FileNotFoundError as e:
-            print("Firmware file must be fetched first!")
-            raise e
+            self.__fw_file.read()    
+        except AttributeError:
+            raise Exception("Firmware file must be fetched first!")
         except Exception as e:
             raise e
 
-        self.ph.close() #Close serial port to give full control to the stm32loader
-        args = ['-p', self.ph.portstr, '-b', str(baudrate), '-e', '-w', '-v', self.__fw_file.name]
+        self.__ph.close() #Close serial port to give full control to the stm32loader
+        args = ['-p', self.__ph.portstr, '-b', str(baudrate), '-e', '-w', '-v', self.__fw_file.name]
         stm32loader_main(*args)
         if (not self.__fw_file.closed):
             self.__fw_file.close() #This will permanently delete the file
 
-        self.ph.apply_settings(self.__serial_settings)
-        self.ph.open() #Re-open serial port
+        self.__ph.apply_settings(self.__serial_settings)
+        self.__ph.open() #Re-open serial port
 
     def ping(self):
         data = struct.pack("<BB", self.__class__._HEADER, self.__class__._PING_DEVID)
