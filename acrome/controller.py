@@ -24,11 +24,16 @@ class Controller():
         self.__fw_file = None
 
     def __del__(self):
-        if self.__ph.isOpen():
-            self.__ph.flush()
-            self.__ph.flushInput()
-            self.__ph.flushOutput()
-            self.__ph.close()
+        try:
+            if self.__ph.isOpen():
+                self.__ph.flush()
+                self.__ph.flushInput()
+                self.__ph.flushOutput()
+                self.__ph.close()
+        except AttributeError:
+            pass
+        except Exception as e:
+            raise e
 
     def _writebus(self, data):
         self.__ph.write(data)
