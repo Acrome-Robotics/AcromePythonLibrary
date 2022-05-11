@@ -17,27 +17,39 @@ class TestStewart(unittest.TestCase):
     def test_enable(self):
         self.dev.enable(True)
         self.assertTrue(self.dev._Stewart__en)
+        self.assertIsInstance(self.dev._Stewart__en, int)
 
         self.dev.enable(False)
         self.assertFalse(self.dev._Stewart__en)
+        self.assertIsInstance(self.dev._Stewart__en, int)
         
         self.dev.enable(3)
         self.assertTrue(self.dev._Stewart__en)
+        self.assertIsInstance(self.dev._Stewart__en, int)
 
         self.dev.enable(4)
         self.assertFalse(self.dev._Stewart__en)
+        self.assertIsInstance(self.dev._Stewart__en, int)
 
     def test_set_motors_valid_values(self):
         for mt in range(-self.dev.__class__._MAX_MT_ABS, self.dev.__class__._MAX_MT_ABS+1):
             self.dev.set_motors([mt] * 6)
             self.assertEqual(self.dev._Stewart__motors, [mt] * 6)
         
+        for m in self.dev._Stewart__motors:
+            self.assertIsInstance(m, int)
+        
     def test_set_motors_invalid_values(self):
         self.dev.set_motors([99999] * 6)
         self.assertEqual(self.dev._Stewart__motors, [self.dev.__class__._MAX_MT_ABS] * 6)
+        for m in self.dev._Stewart__motors:
+            self.assertIsInstance(m, int)
 
         self.dev.set_motors([-99999] * 6)
         self.assertEqual(self.dev._Stewart__motors, [-self.dev.__class__._MAX_MT_ABS] * 6)
+        
+        for m in self.dev._Stewart__motors:
+            self.assertIsInstance(m, int)
 
     def test_write(self):
         self.dev.enable(True)

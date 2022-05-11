@@ -187,9 +187,9 @@ class OneDOF(Controller):
 
     def set_speed(self, speed):
         if speed != 0:
-            self.__speed = speed if abs(speed) <= self.__class__._MAX_SPEED_ABS else self.__class__._MAX_SPEED_ABS * (speed / abs(speed))
+            self.__speed = int(speed if abs(speed) <= self.__class__._MAX_SPEED_ABS else self.__class__._MAX_SPEED_ABS * (speed / abs(speed)))
         else:
-            self.__speed = speed
+            self.__speed = int(speed)
 
     def enable(self, en):
         self.__config = (self.__config & ~self.__class__._EN_MASK) | (en & self.__class__._EN_MASK)
@@ -231,9 +231,9 @@ class BallBeam(Controller):
 
     def set_servo(self, servo):
         if servo != 0:
-            self.__servo = servo if abs(servo) <= self.__class__._MAX_SERVO_ABS else self.__class__._MAX_SERVO_ABS * (servo / abs(servo))
+            self.__servo = int(servo if abs(servo) <= self.__class__._MAX_SERVO_ABS else self.__class__._MAX_SERVO_ABS * (servo / abs(servo)))
         else:
-            self.__servo = servo
+            self.__servo = int(servo)
 
     def _write(self):
         data = struct.pack("<BBh", self.__class__._HEADER, self.__class__._DEVID, self.__servo)
@@ -263,14 +263,14 @@ class BallBalancingTable(Controller):
 
     def set_servo(self, x, y):
         if x != 0:
-            self.__servo[0] = x if abs(x) <= self.__class__._MAX_SERVO_ABS else self.__class__._MAX_SERVO_ABS * (x / abs(x))
+            self.__servo[0] = int(x if abs(x) <= self.__class__._MAX_SERVO_ABS else self.__class__._MAX_SERVO_ABS * (x / abs(x)))
         else:
-            self.__servo[0] = x
+            self.__servo[0] = int(x)
 
         if y != 0:
-            self.__servo[1] = y if abs(x) <= self.__class__._MAX_SERVO_ABS else self.__class__._MAX_SERVO_ABS * (y / abs(y))
+            self.__servo[1] = int(y if abs(x) <= self.__class__._MAX_SERVO_ABS else self.__class__._MAX_SERVO_ABS * (y / abs(y)))
         else:
-            self.__servo[1] = y
+            self.__servo[1] = int(y)
 
     def _write(self):
         data = struct.pack("<BBhh", self.__class__._HEADER, self.__class__._DEVID, self.__servo[0], self.__servo[1])
@@ -309,12 +309,12 @@ class Delta(Controller):
 
         for i, motor in enumerate(motors):
             if motor <= self.__class__._MAX_MT_POS and motor >= self.__class__._MIN_MT_POS:
-                self.__motors[i] = motor
+                self.__motors[i] = int(motor)
             else:
                 if motor >= self.__class__._MAX_MT_POS:
-                    self.__motors[i] = self.__class__._MAX_MT_POS
+                    self.__motors[i] = int(self.__class__._MAX_MT_POS)
                 else:
-                    self.__motors[i] = self.__class__._MIN_MT_POS
+                    self.__motors[i] = int(self.__class__._MIN_MT_POS)
 
     def _write(self):
         data = struct.pack("<BBBhhh", self.__class__._HEADER, self.__class__._DEVID, self.__magnet, *self.__motors)
@@ -353,9 +353,9 @@ class Stewart(Controller):
 
         for i, motor in enumerate(motors):
             if motor != 0:
-                self.__motors[i] = motor if abs(motor) <= self.__class__._MAX_MT_ABS else self.__class__._MAX_MT_ABS * (motor / abs(motor))
+                self.__motors[i] = int(motor if abs(motor) <= self.__class__._MAX_MT_ABS else self.__class__._MAX_MT_ABS * (motor / abs(motor)))
             else:
-                self.__motors[i] = 0
+                self.__motors[i] = int(motor)
 
     def _write(self):
         data = struct.pack("<BBBhhhhhh", self.__class__._HEADER, self.__class__._DEVID, self.__en, *self.__motors)

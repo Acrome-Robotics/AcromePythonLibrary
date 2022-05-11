@@ -19,33 +19,44 @@ class TestOneDOF(unittest.TestCase):
             self.dev.set_speed(speed)
             self.assertEqual(self.dev._OneDOF__speed, speed)
 
+        self.assertTrue(isinstance(self.dev._OneDOF__speed, int))
+
     def test_set_speed_invalid_values(self):
         self.dev.set_speed(99999999)
-        self.assertEqual(self.dev._OneDOF__speed, 1000)
+        self.assertEqual(self.dev._OneDOF__speed, self.dev.__class__._MAX_SPEED_ABS)
+        
+        self.assertTrue(isinstance(self.dev._OneDOF__speed, int))
 
         self.dev.set_speed(-99999999)
-        self.assertEqual(self.dev._OneDOF__speed, -1000)
+        self.assertEqual(self.dev._OneDOF__speed, -self.dev.__class__._MAX_SPEED_ABS)
+
+        self.assertTrue(isinstance(self.dev._OneDOF__speed, int))
 
     def test_set_enable(self):
         first_config = self.dev._OneDOF__config
         self.dev.enable(1)
         self.assertEqual(self.dev._OneDOF__config, first_config | self.dev.__class__._EN_MASK)
+        self.assertTrue(isinstance(self.dev._OneDOF__config, int))
 
     def test_reset_enable(self):
         self.dev._OneDOF__config |= self.dev._EN_MASK
         first_config = self.dev._OneDOF__config
         self.dev.enable(False)
         self.assertEqual(self.dev._OneDOF__config, first_config & ~self.dev._EN_MASK)
+        self.assertTrue(isinstance(self.dev._OneDOF__config, int))
         
     def test_reset_encoder(self):
         first_config = self.dev._OneDOF__config
         self.dev.reset_encoder_mt()
         self.assertEqual(self.dev._OneDOF__config, first_config | self.dev._ENC1_RST_MASK)
+        self.assertTrue(isinstance(self.dev._OneDOF__config, int))
         self.dev._OneDOF__config = 0
+        
         
         first_config = self.dev._OneDOF__config
         self.dev.reset_encoder_shaft()
         self.assertEqual(self.dev._OneDOF__config, first_config | self.dev._ENC2_RST_MASK)
+        self.assertTrue(isinstance(self.dev._OneDOF__config, int))
     
     def test_write(self):
         self.dev.enable(1)

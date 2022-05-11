@@ -29,9 +29,14 @@ class TestBallBalancingTable(unittest.TestCase):
     def test_set_speed_invalid_values(self):
         self.dev.set_servo(99999, 99999)
         self.assertEqual(self.dev._BallBalancingTable__servo, [self.dev.__class__._MAX_SERVO_ABS,self.dev.__class__._MAX_SERVO_ABS])
+        
+        for m in self.dev._BallBalancingTable__servo:
+            self.assertIsInstance(m, int)
 
         self.dev.set_servo(-99999, -99999)
         self.assertEqual(self.dev._BallBalancingTable__servo, [-self.dev.__class__._MAX_SERVO_ABS,-self.dev.__class__._MAX_SERVO_ABS])
+        for m in self.dev._BallBalancingTable__servo:
+            self.assertIsInstance(m, int)
 
     def test_write(self):
         self.dev.set_servo(700,300)
