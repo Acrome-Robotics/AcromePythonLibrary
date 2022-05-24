@@ -10,3 +10,4 @@ class MovingAverage():
         self.__output = out + self.__array[self.__iter]/len(self.__array)
         self.__iter = (self.__iter + 1) % len(self.__array)
         return self.__output
+
