@@ -1,9 +1,9 @@
 from acrome import controller
 from acrome import autocontrol
 import time
-import queue
 import math
 import numpy as np
+
 class AutoOneDOF(controller.OneDOF):
     def __init__(self, interval=0.004, *args, **kwargs):
         self.__interval = interval
