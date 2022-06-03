@@ -154,8 +154,9 @@ class AutoStewart(controller.Stewart):
         self.__leg_len_retracted = retracted_leg_length
 
     def set_motor_limits(self, pos_min, pos_max):
-        self.__pos_min = pos_min if pos_min < 4096 and pos_min > 0 else 0
-        self.__pos_max = pos_max if pos_max < 4096 and pos_max > 0 else 4095
+        if len(pos_min) == 6 and len(pos_max) == 6:
+            self.__pos_min = [pos if pos < 4096 and pos > 0 else 0 for pos in pos_min]
+            self.__pos_max = [pos if pos < 4096 and pos > 0 else 4095 for pos in pos_max]
 
     def inverse_kinematics(self, x, y, z, roll, pitch, yaw):
         __axis_remap = lambda x, y, z, roll, pitch, yaw : (-y, x, z, -pitch, roll, -yaw)
