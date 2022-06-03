@@ -7,7 +7,9 @@ dependencies = [
     'pyserial',
     'crccheck',
     'stm32loader',
-    'requests'
+    'requests',
+    'flask',
+    'numpy'
 ]
 build-backend = "setuptools.build_meta"
 
