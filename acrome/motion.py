@@ -196,3 +196,6 @@ class AutoStewart(controller.Stewart):
 
         return list(map(mm2raw, vectorel_length, self.__pos_max, self.__pos_min))
     
+    def generate_trajectory(self, first_pos:list, second_pos:list, duration):
+        return list(np.linspace(start=first_pos, stop=second_pos, num=int(duration / self.__interval), endpoint=True))
+        
