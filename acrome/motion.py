@@ -104,8 +104,21 @@ class AutoStewart(controller.Stewart):
     def __init__(self, interval=1, *args, **kwargs):
         self.__interval = interval
         self.control = [autocontrol.PID()] * 6
-        self.__pos_min = 0
-        self.__pos_max = 4095
+        self.__pos_min = [0] * 6
+        self.__pos_max = [4095] * 6
+        
+        self.__tradius = 130
+        self.__bradius = 170
+
+        #Angles between first and second motors
+        self.__tangle = math.radians(25)
+        self.__bangle = math.radians(90)
+
+        self.__toffset = 62
+        self.__boffset = 57
+
+        self.__leg_len_extended = 598
+        self.__leg_len_retracted = 394.8
         
         map(autocontrol.PID.set_gains, self.control, [{'ff':300, 'kp':0.25, 'kd':0, 'ki':0, 'antiwindup':0, 'deadband':(0,0)}]*6)
         
