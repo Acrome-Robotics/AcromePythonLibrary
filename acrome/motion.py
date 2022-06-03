@@ -164,7 +164,7 @@ class AutoStewart(controller.Stewart):
         rot_y = lambda angle : np.array([[math.cos(angle),0,math.sin(angle)],[0, 1, 0], [-math.sin(angle), 0, math.cos(angle)]])
         rot_z = lambda angle : np.array([[math.cos(angle), -math.sin(angle), 0],[math.sin(angle), math.cos(angle), 0],[0,0,1]])
 
-        mm2enc = lambda mm : (mm * (self.__pos_max - self.__pos_min) / (self.__leg_len_extended - self.__leg_len_retracted))
+        mm2raw = lambda mm, pos_max, pos_min : (mm * (pos_max - pos_min) / (self.__leg_len_extended - self.__leg_len_retracted))
 
         x,y,z,roll,pitch,yaw = (__axis_remap(x,y,z,roll,pitch,yaw))
 
@@ -194,4 +194,5 @@ class AutoStewart(controller.Stewart):
 
         vectorel_length = [np.linalg.norm(jcoord-bcoord) - self.__leg_len_retracted for jcoord, bcoord in zip(platform_joint_coords, bottom_mt_coords) ]
 
-        return list(map(mm2enc, vectorel_length))
+        return list(map(mm2raw, vectorel_length, self.__pos_max, self.__pos_min))
+    
