@@ -65,8 +65,14 @@ class PID():
     def calculate(self):
         self.__reached = False
         self.__error = self.__error_filter.apply(self.__setpoint - self.__input)
-
-        if ((self.__error_deadband[0] < self.__error)  or (self.__error > self.__error_deadband[1])):
+        if self.__error > 0:
+            if ((self.__error_deadband[0] > self.__error)  or (self.__error < self.__error_deadband[1])):
+                self.__reached = True
+                return 0
+        else:
+            if ((self.__error_deadband[0] < self.__error)  or (self.__error > self.__error_deadband[1])):
+                self.__reached = True
+                return 0
 
             self.__proportional_term = self.__kp * self.__error
 
