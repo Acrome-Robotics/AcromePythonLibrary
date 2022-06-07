@@ -139,5 +139,5 @@ if __name__ == '__main__':
     app.add_url_rule('/update/clear', 'clear_motion', clear_motion, methods=['POST'])
     app.add_url_rule('/update/params', 'update_params', update_params, methods=['POST'])
 
-    app.run(port=wsp, debug=False)
+    app.run(host='0.0.0.0', port=wsp, debug=False)
 
