@@ -74,14 +74,16 @@ class AutoBallBalancingTable(controller.BallBalancingTable):
         time.sleep(sleep_time if sleep_time > 0 else 0)
     
     def update_setpoint(self, val):
-        map(autocontrol.PID.setpoint, self.control, val)
+        for control, value in zip(self.control, val):
+            control.setpoint(value)
 
 class AutoDelta(controller.Delta):
     def __init__(self, interval=1, *args, **kwargs):
         self.__interval = interval
         self.control = [autocontrol.PID()] * 3
         
-        map(autocontrol.PID.set_gains, self.control, [{'ff':0, 'kp':1, 'kd':0, 'ki':0, 'antiwindup':0, 'deadband':(0,0)}]*3)
+        for control in self.control:
+            control.set_gains({'ff':0, 'kp':1.0, 'kd':0.00, 'ki':0, 'antiwindup':0, 'deadband':(0,0)})
         
         for ctrl in self.control:
             ctrl.set_interval(self.__interval)
@@ -91,14 +93,18 @@ class AutoDelta(controller.Delta):
 
     def iter_control(self):
         _time0 = time.time()
-        map(autocontrol.PID.set_input, self.control, self.position)
+
+        for control, position in zip(self.control, self.position):
+            control.set_input(position)
+
         self.set_motors([control.calculate() for control in self.control])
         self.update()
         sleep_time = self.__interval - (time.time() - _time0)
         time.sleep(sleep_time if sleep_time > 0 else 0)
     
     def update_setpoint(self, val):
-        map(autocontrol.PID.setpoint, self.control, val)
+        for control, value in zip(self.control, val):
+            control.setpoint(value)
 
 class AutoStewart(controller.Stewart):
     def __init__(self, interval=1, *args, **kwargs):
@@ -120,7 +126,8 @@ class AutoStewart(controller.Stewart):
         self.__leg_len_extended = 598
         self.__leg_len_retracted = 394.8
         
-        map(autocontrol.PID.set_gains, self.control, [{'ff':300, 'kp':0.25, 'kd':0, 'ki':0, 'antiwindup':0, 'deadband':(0,0)}]*6)
+        for control in self.control:
+            control.set_gains({'ff':0, 'kp':1, 'kd':0, 'ki':0, 'antiwindup':0, 'deadband':(0,0)})
         
         for ctrl in self.control:
             ctrl.set_interval(self.__interval)
@@ -130,14 +137,16 @@ class AutoStewart(controller.Stewart):
 
     def iter_control(self):
         _time0 = time.time()
-        map(autocontrol.PID.set_input, self.control, self.position)
+        for control, pos in zip(self.control, self.position):
+            control.set_input(pos)
         self.set_motors([control.calculate() for control in self.control])
         self.update()
         sleep_time = self.__interval - (time.time() - _time0)
         time.sleep(sleep_time if sleep_time > 0 else 0)
     
     def update_setpoint(self, val):
-        map(autocontrol.PID.setpoint, self.control, val)
+        for control, value in zip(self.control, val):
+            control.setpoint(value)
 
     def set_mechanical_constants(self, top_radius, bottom_radius, top_offset, bottom_offset, top_angle, bottom_angle, extended_leg_length, retracted_leg_length):
         self.__tradius = top_radius
