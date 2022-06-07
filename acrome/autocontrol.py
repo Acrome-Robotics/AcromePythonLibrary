@@ -34,7 +34,6 @@ class PID():
         self.__reached = False
 
     def __call__(self):
-        print("CALLED: IN {} OUT {}".format(self.__input, self.__output))
         return self.calculate()
 
     def set_interval(self, interval):
