@@ -31,6 +31,7 @@ class PID():
         self.__antiwindup = 0
         self.__error_filter = MovingAverage(1)
         self.__derivative_filter = MovingAverage(1)
+        self.__reached = False
 
     def __call__(self):
         print("CALLED: IN {} OUT {}".format(self.__input, self.__output))
@@ -63,7 +64,7 @@ class PID():
         self.__input = input
 
     def calculate(self):
-
+        self.__reached = False
         self.__error = self.__error_filter.apply(self.__setpoint - self.__input)
 
         if ((self.__error_deadband[0] < self.__error)  or (self.__error > self.__error_deadband[1])):
