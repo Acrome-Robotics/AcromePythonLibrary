@@ -61,6 +61,9 @@ class PID():
 
     def set_input(self, input):
         self.__input = input
+    
+    def is_reached(self):
+        return self.__reached
 
     def calculate(self):
         self.__reached = False
