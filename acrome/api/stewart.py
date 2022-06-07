@@ -123,11 +123,11 @@ if __name__ == '__main__':
         if request.method == 'POST':
             while True:
                 try:
-                    pos = sp_q.get_nowait()
+                    _ = sp_q.get_nowait()
                 except Empty:
                     break
             sp_q.put({'enable':False, 'motors':[0]*6})
-
+            return Response(status=200)
 
     control_process = Thread(target=process_loop, args=[sp_q, param_q, pos_q, sp, baud], daemon=True)
     control_process.start()
