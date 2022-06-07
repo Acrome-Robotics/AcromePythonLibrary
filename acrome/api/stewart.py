@@ -136,6 +136,8 @@ if __name__ == '__main__':
     app.add_url_rule('/update/setpoint', 'update_setpoint', update_setpoint, methods=['POST'])
     app.add_url_rule('/update/trajectory', 'generate_trajectory', generate_trajectory, methods=['POST'])
     app.add_url_rule('/telemetry', 'get_telemetry', get_telemetry)
+    app.add_url_rule('/update/clear', 'clear_motion', clear_motion, methods=['POST'])
+    app.add_url_rule('/update/params', 'update_params', update_params, methods=['POST'])
 
     app.run(port=wsp, debug=False)
 
