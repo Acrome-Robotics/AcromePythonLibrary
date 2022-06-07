@@ -3,8 +3,6 @@ import getopt
 from flask import Flask, request, Response
 from acrome.motion import AutoStewart
 from acrome.autocontrol import PID
-from motion import AutoStewart
-from autocontrol import PID
 from threading import Thread
 from queue import Queue, Empty
 import json
