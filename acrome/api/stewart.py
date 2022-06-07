@@ -86,13 +86,14 @@ if __name__ == '__main__':
     def generate_trajectory():
         if request.method == 'POST':
             mot_vals = dev.inverse_kinematics(**(json.loads(request.data)['setpoint']))
+            en = (json.loads(request.data))['enable']
             for mv in mot_vals:
                 if mv > 4095 or mv < 0:
                     return Response(status=422)
             
             traj = dev.generate_trajectory(get_telemetry().json['position'], mot_vals, json.loads(request.data)['duration'])
             for point in traj:
-                sp_q.put(list(point))
+                sp_q.put({'enable' : en, 'motors' : list(point)})
             return Response(status=200)
 
     def get_telemetry():
