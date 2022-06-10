@@ -1,4 +1,4 @@
-class MovingAverage():
+class MovingAverageFilter():
     def __init__(self, size):
         self.__array = [0]*size
         self.__iter = 0
@@ -29,8 +29,8 @@ class PID():
         self.__error_deadband = (0, 0)
         self.__interval = 1
         self.__antiwindup = 0
-        self.__error_filter = MovingAverage(1)
-        self.__derivative_filter = MovingAverage(1)
+        self.__error_filter = MovingAverageFilter(1)
+        self.__derivative_filter = MovingAverageFilter(1)
         self.__reached = False
 
     def __call__(self):
@@ -42,12 +42,12 @@ class PID():
     def config_filter(self, size, stage='error', filter_type='mavg'):
         if stage == 'error':
             if filter_type == 'mavg':
-                self.__error_filter = MovingAverage(size)
+                self.__error_filter = MovingAverageFilter(size)
             else:
                 raise ValueError(f"Filter type {filter_type} is not valid!")
         elif stage == 'derivative':
             if filter_type == 'mavg':
-                self.__derivative_filter = MovingAverage(size)
+                self.__derivative_filter = MovingAverageFilter(size)
             else:
                 raise ValueError(f"Filter type {filter_type} is not valid!")
 
