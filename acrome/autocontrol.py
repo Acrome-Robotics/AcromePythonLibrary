@@ -11,6 +11,27 @@ class MovingAverageFilter():
         self.__iter = (self.__iter + 1) % len(self.__array)
         return self.__output
 
+class MedianFilter():
+    def __init__(self, size):
+        if size == 0:
+            size = 1
+        self.__array = [0]*size
+        self.__output = 0
+
+    def apply(self, val):
+        _ = self.__array.pop(0)
+        self.__array.append(float(val))
+        self.__array.sort()
+        
+        midpoint = int(len(self.__array) / 2)
+
+        if len(self.__array) % 2 == 0:
+            self.__output = (self.__array[midpoint - 1] + self.__array[midpoint]) / 2
+        else:
+            self.__output = self.__array[midpoint] #Discard fraction
+            
+        return self.__output
+
 class PID():
     def __init__(self):
         self.__output = 0
@@ -43,11 +64,15 @@ class PID():
         if stage == 'error':
             if filter_type == 'mavg':
                 self.__error_filter = MovingAverageFilter(size)
+            elif filter_type == 'median':
+                self.__error_filter = MedianFilter(size)
             else:
                 raise ValueError(f"Filter type {filter_type} is not valid!")
         elif stage == 'derivative':
             if filter_type == 'mavg':
                 self.__derivative_filter = MovingAverageFilter(size)
+            elif filter_type == 'median':
+                self.__error_filter = MedianFilter(size)
             else:
                 raise ValueError(f"Filter type {filter_type} is not valid!")
 
