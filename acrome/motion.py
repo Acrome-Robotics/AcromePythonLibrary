@@ -110,6 +110,8 @@ class AutoStewart(controller.Stewart):
     def __init__(self, interval=1, *args, **kwargs):
         self.__interval = interval
         self.control = [autocontrol.PID()] * 6
+        for control in self.control:
+            control.config_filter(20)
         self.__pos_min = [0] * 6
         self.__pos_max = [4095] * 6
         
@@ -127,7 +129,7 @@ class AutoStewart(controller.Stewart):
         self.__leg_len_retracted = 394.8
         
         for control in self.control:
-            control.set_gains({'ff':0, 'kp':1, 'kd':0, 'ki':0, 'antiwindup':0, 'deadband':(0,0)})
+            control.set_gains({'ff':0, 'kp':1, 'kd':0, 'ki':0, 'antiwindup':0, 'deadband':(-20,20)})
         
         for ctrl in self.control:
             ctrl.set_interval(self.__interval)
