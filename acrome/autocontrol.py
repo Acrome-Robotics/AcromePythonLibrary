@@ -69,13 +69,15 @@ class PID():
         self.__reached = False
         self.__error = self.__error_filter.apply(self.__setpoint - self.__input)
         if self.__error > 0:
-            if ((self.__error_deadband[0] > self.__error)  or (self.__error < self.__error_deadband[1])):
+            if self.__error <= self.__error_deadband[1]: #Positive
                 self.__reached = True
-                return 0
+                self.__output = 0
+                return self.__output
         else:
-            if ((self.__error_deadband[0] < self.__error)  or (self.__error > self.__error_deadband[1])):
+            if self.__error >= self.__error_deadband[0]: #Negative
                 self.__reached = True
-                return 0
+                self.__output = 0
+                return self.__output
 
         self.__proportional_term = self.__kp * self.__error
 
@@ -89,7 +91,6 @@ class PID():
             self.__integral_term = self.__cumulative_error / abs(self.__cumulative_error) * self.__antiwindup * self.__ki
 
         self.__output = self.__ff + self.__proportional_term + self.__derivative_term + self.__integral_term
-
         return self.__output
     
     def setpoint(self, setpoint):
