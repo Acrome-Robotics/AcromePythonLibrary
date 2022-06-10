@@ -35,7 +35,7 @@ def __get_arguments():
     return sp, baud, wsp
 
 if __name__ == '__main__':
-    __INTERVAL = 0.004
+    __INTERVAL = 0.008
 
     last_telemetry = {'position':[0] * 6, 'imu':[0]*3}
     
