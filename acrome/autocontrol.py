@@ -77,18 +77,18 @@ class PID():
                 self.__reached = True
                 return 0
 
-            self.__proportional_term = self.__kp * self.__error
+        self.__proportional_term = self.__kp * self.__error
 
-            self.__derivative_term = self.__derivative_filter.apply(self.__kd * (self.__error - self.__previous_error) / self.__interval)
-            self.__previous_error = self.__error
+        self.__derivative_term = self.__derivative_filter.apply(self.__kd * (self.__error - self.__previous_error) / self.__interval)
+        self.__previous_error = self.__error
 
-            self.__cumulative_error += self.__error
-            if ((-self.__antiwindup <= self.__cumulative_error <= self.__antiwindup) or self.__antiwindup == 0):
-                self.__integral_term = self.__cumulative_error * self.__ki
-            else:
-                self.__integral_term = self.__cumulative_error / abs(self.__cumulative_error) * self.__antiwindup * self.__ki
+        self.__cumulative_error += self.__error
+        if ((-self.__antiwindup <= self.__cumulative_error <= self.__antiwindup) or self.__antiwindup == 0):
+            self.__integral_term = self.__cumulative_error * self.__ki
+        else:
+            self.__integral_term = self.__cumulative_error / abs(self.__cumulative_error) * self.__antiwindup * self.__ki
 
-            self.__output = self.__ff + self.__proportional_term + self.__derivative_term + self.__integral_term
+        self.__output = self.__ff + self.__proportional_term + self.__derivative_term + self.__integral_term
 
         return self.__output
     
