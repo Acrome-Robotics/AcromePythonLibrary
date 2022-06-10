@@ -50,8 +50,8 @@ if __name__ == '__main__':
         while True:
             try:
                 params = param_q.get_nowait()
-                dev.set_mechanical_constants(params['mechanical_contants'])
-                dev.set_motor_limits(params['motor_limits'])
+                dev.set_mechanical_constants(**dict(params['mechanical_constants']))
+                dev.set_motor_limits(**(params['motor_limits']))
                 map(PID.set_gains, dev.control, params['gains'])
             except Empty:
                 pass
