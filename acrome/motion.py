@@ -170,35 +170,32 @@ class AutoStewart(controller.Stewart):
             self.__pos_max = [pos if pos < 4096 and pos > 0 else 4095 for pos in pos_max]
 
     def inverse_kinematics(self, x, y, z, roll, pitch, yaw):
-        __axis_remap = lambda x, y, z, roll, pitch, yaw : (-y, x, z, -pitch, roll, -yaw)
-        rot_x = lambda angle : np.array([[1,0,0],[0, math.cos(angle), -math.sin(angle)], [0, math.sin(angle), math.cos(angle)]])
-        rot_y = lambda angle : np.array([[math.cos(angle),0,math.sin(angle)],[0, 1, 0], [-math.sin(angle), 0, math.cos(angle)]])
-        rot_z = lambda angle : np.array([[math.cos(angle), -math.sin(angle), 0],[math.sin(angle), math.cos(angle), 0],[0,0,1]])
+        rot_x = lambda angle : np.array([[1,0,0], [0, math.cos(angle), -math.sin(angle)], [0, math.sin(angle), math.cos(angle)]])
+        rot_y = lambda angle : np.array([[math.cos(angle), 0, math.sin(angle)], [0, 1, 0], [-math.sin(angle), 0, math.cos(angle)]])
+        rot_z = lambda angle : np.array([[math.cos(angle), -math.sin(angle), 0], [math.sin(angle), math.cos(angle), 0], [0,0,1]])
 
         mm2raw = lambda mm, pos_max, pos_min : (mm * (pos_max - pos_min) / (self.__leg_len_extended - self.__leg_len_retracted))
-
-        x,y,z,roll,pitch,yaw = (__axis_remap(x,y,z,roll,pitch,yaw))
 
         roll, pitch, yaw = (math.radians(roll), math.radians(pitch), math.radians(yaw))
 
         bottom_mt_coords = np.empty(shape=(6,3), dtype=np.float32)
         platform_mt_coords = np.empty(shape=(6,3), dtype=np.float32)
 
-        bottom_mt_coords[0] = [self.__bradius *  -math.sin((2*math.pi / 3 - self.__bangle)/2), self.__bradius *  math.cos((2*math.pi / 3 - self.__bangle)/2), self.__boffset]
+        bottom_mt_coords[0] = [self.__bradius *  math.cos((2*math.pi / 3 - self.__bangle)/2), self.__bradius *  math.sin((2*math.pi / 3 - self.__bangle)/2), self.__boffset]
         bottom_mt_coords[1] = np.transpose(np.matmul(rot_z(self.__bangle), np.vstack(bottom_mt_coords[0])))
-        bottom_mt_coords[5] = np.transpose(np.matmul(rot_z(-2 * math.pi / 3), np.vstack(bottom_mt_coords[1])))
-        bottom_mt_coords[3] = np.transpose(np.matmul(rot_z(-2 * math.pi / 3), np.vstack(bottom_mt_coords[5])))
-        bottom_mt_coords[4] = np.transpose(np.matmul(rot_z(-2 * math.pi / 3), np.vstack(bottom_mt_coords[0])))
-        bottom_mt_coords[2] = np.transpose(np.matmul(rot_z(-2 * math.pi / 3), np.vstack(bottom_mt_coords[4])))
+        bottom_mt_coords[2] = np.transpose(np.matmul(rot_z(2 * math.pi / 3), np.vstack(bottom_mt_coords[0])))
+        bottom_mt_coords[3] = np.transpose(np.matmul(rot_z(2 * math.pi / 3), np.vstack(bottom_mt_coords[1])))
+        bottom_mt_coords[4] = np.transpose(np.matmul(rot_z(2 * math.pi / 3), np.vstack(bottom_mt_coords[2])))
+        bottom_mt_coords[5] = np.transpose(np.matmul(rot_z(2 * math.pi / 3), np.vstack(bottom_mt_coords[3])))
 
-        platform_mt_coords[0] = [self.__tradius *  -math.sin((2*math.pi / 3 - self.__tangle)/2), self.__tradius *  math.cos((2*math.pi / 3 - self.__tangle)/2), 0]
+        platform_mt_coords[0] = [self.__tradius *  math.cos((2*math.pi / 3 - self.__tangle)/2), self.__tradius *  math.sin((2*math.pi / 3 - self.__tangle)/2), 0]
         platform_mt_coords[1] = np.transpose(np.matmul(rot_z(self.__tangle), np.vstack(platform_mt_coords[0])))
-        platform_mt_coords[5] = np.transpose(np.matmul(rot_z(-2 * math.pi / 3), np.vstack(platform_mt_coords[1])))
-        platform_mt_coords[3] = np.transpose(np.matmul(rot_z(-2 * math.pi / 3), np.vstack(platform_mt_coords[5])))
-        platform_mt_coords[4] = np.transpose(np.matmul(rot_z(-2 * math.pi / 3), np.vstack(platform_mt_coords[0])))
-        platform_mt_coords[2] = np.transpose(np.matmul(rot_z(-2 * math.pi / 3), np.vstack(platform_mt_coords[4])))
+        platform_mt_coords[2] = np.transpose(np.matmul(rot_z(2 * math.pi / 3), np.vstack(platform_mt_coords[0])))
+        platform_mt_coords[3] = np.transpose(np.matmul(rot_z(2 * math.pi / 3), np.vstack(platform_mt_coords[1])))
+        platform_mt_coords[4] = np.transpose(np.matmul(rot_z(2 * math.pi / 3), np.vstack(platform_mt_coords[2])))
+        platform_mt_coords[5] = np.transpose(np.matmul(rot_z(2 * math.pi / 3), np.vstack(platform_mt_coords[3])))
 
-        rotation_matrix = np.matmul(np.matmul(rot_x(roll), rot_y(pitch)), rot_z(yaw))
+        rotation_matrix = np.matmul(np.matmul(rot_z(yaw), rot_y(pitch)), rot_x(roll))
         rpy_offset = np.transpose(np.matmul(rotation_matrix, [0,0,self.__toffset]))
         platform_mt_coords = [np.add(np.matmul(rotation_matrix, np.transpose(pcoord)), [x,y,z]) for pcoord in platform_mt_coords]
         platform_joint_coords = [np.subtract(pcoord, rpy_offset) for pcoord in platform_mt_coords]
