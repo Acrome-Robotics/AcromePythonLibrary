@@ -228,7 +228,7 @@ class Master():
 	def __read_bus(self, size) -> bytes:
 		return self.__ph.read(size=size)
 
-	def attach(self, premium):
+	def attach(self, premium:Premium):
 		self.__driver_list[premium.vars[Index.DeviceID].value()] = premium
 
 	def parse_received(self, data):
