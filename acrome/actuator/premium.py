@@ -128,7 +128,7 @@ class Premium():
 			_Data(Index.CRCValue, 'I')
 		]
 
-		if ID > 253 or ID < 0:
+		if ID > 255 or ID < 0:
 			raise ValueError("Device ID can not be higher than 253 or lower than 0!")
 		else:
 			self.vars[Index.DeviceID].value(ID)
