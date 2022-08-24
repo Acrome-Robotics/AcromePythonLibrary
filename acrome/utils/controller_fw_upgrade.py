@@ -1,5 +1,12 @@
 from acrome.controller import *
 
+print("\nDevice will enter to the bootloader.") 
+print("DO NOT DISCONNECT POWER FROM THE DEVICE SINCE IT MAY BRICK YOUR DEIVCE!\n")
+
+print("Press any key to continue or CTRL + C to cancel")
+
+input()
+
 dev = Controller()
 
 if (not dev.ping()):
@@ -14,13 +21,8 @@ print("Latest available firmware version is", dev.get_latest_version())
 if(dev.fetch_fw_binary()):
 	print("\nFirmware file successfully fetched from repository!")
 
-print("\nDevice will enter to the bootloader.") 
-print("DO NOT DISCONNECT POWER FROM THE DEVICE SINCE IT MAY BRICK YOUR DEIVCE!\n")
-
-print("Press any key to continue or CTRL + C to cancel")
-
-input()
-
+while not dev.ping():
+	pass
 dev.enter_bootloader()
 dev.update_fw_binary()
 
