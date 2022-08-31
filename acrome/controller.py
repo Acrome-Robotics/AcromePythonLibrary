@@ -47,7 +47,7 @@ class Controller():
 
     def _readbus(self, byte_count):
         data = self.__ph.read(byte_count)
-        if len(data) > 0:
+        if len(data) == byte_count:
             if data[0] == self.__class__._HEADER:
                 if self._crc32(data[:-4]) == data[-4:]:
                     return data
