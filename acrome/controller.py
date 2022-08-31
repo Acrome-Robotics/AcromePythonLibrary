@@ -7,6 +7,11 @@ import requests
 import hashlib
 from packaging.version import parse as parse_version
 
+class UnsupportedFirmware(Exception):
+    pass
+class UnsupportedHardware(Exception):
+    pass
+
 class Controller():
     _HEADER = 0x55
     _ID_INDEX = 1
@@ -346,6 +351,11 @@ class Stewart(Controller):
         self.__motors = [0] * 6
         self.position = [0] * 6
         self.imu = [0] * 3
+
+        board_info = self.get_board_info()
+        if parse_version(board_info['Hardware Version']) <= parse_version('1.1.0'):
+            raise UnsupportedHardware("Stewart is only available on Acrome Controller hardware version 1.2.0 or later. Your version is {}".format(board_info['Hardware Version']))
+
 
     def __del__(self):
         super().__del__()
