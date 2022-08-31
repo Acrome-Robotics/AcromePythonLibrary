@@ -18,39 +18,39 @@ class TestStewartEncoder(unittest.TestCase):
 
     def test_enable(self):
         self.dev.enable(True)
-        self.assertTrue(self.dev._Stewart__en)
-        self.assertIsInstance(self.dev._Stewart__en, int)
+        self.assertTrue(self.dev._StewartEncoder__en)
+        self.assertIsInstance(self.dev._StewartEncoder__en, int)
 
         self.dev.enable(False)
-        self.assertFalse(self.dev._Stewart__en)
-        self.assertIsInstance(self.dev._Stewart__en, int)
+        self.assertFalse(self.dev._StewartEncoder__en)
+        self.assertIsInstance(self.dev._StewartEncoder__en, int)
         
         self.dev.enable(3)
-        self.assertTrue(self.dev._Stewart__en)
-        self.assertIsInstance(self.dev._Stewart__en, int)
+        self.assertTrue(self.dev._StewartEncoder__en)
+        self.assertIsInstance(self.dev._StewartEncoder__en, int)
 
         self.dev.enable(4)
-        self.assertFalse(self.dev._Stewart__en)
-        self.assertIsInstance(self.dev._Stewart__en, int)
+        self.assertFalse(self.dev._StewartEncoder__en)
+        self.assertIsInstance(self.dev._StewartEncoder__en, int)
 
     def test_set_motors_valid_values(self):
         for mt in range(-self.dev.__class__._MAX_MT_ABS, self.dev.__class__._MAX_MT_ABS+1):
             self.dev.set_motors([mt] * 6)
-            self.assertEqual(self.dev._Stewart__motors, [mt] * 6)
+            self.assertEqual(self.dev._StewartEncoder__motors, [mt] * 6)
         
-        for m in self.dev._Stewart__motors:
+        for m in self.dev._StewartEncoder__motors:
             self.assertIsInstance(m, int)
         
     def test_set_motors_invalid_values(self):
         self.dev.set_motors([99999] * 6)
-        self.assertEqual(self.dev._Stewart__motors, [self.dev.__class__._MAX_MT_ABS] * 6)
-        for m in self.dev._Stewart__motors:
+        self.assertEqual(self.dev._StewartEncoder__motors, [self.dev.__class__._MAX_MT_ABS] * 6)
+        for m in self.dev._StewartEncoder__motors:
             self.assertIsInstance(m, int)
 
         self.dev.set_motors([-99999] * 6)
-        self.assertEqual(self.dev._Stewart__motors, [-self.dev.__class__._MAX_MT_ABS] * 6)
+        self.assertEqual(self.dev._StewartEncoder__motors, [-self.dev.__class__._MAX_MT_ABS] * 6)
         
-        for m in self.dev._Stewart__motors:
+        for m in self.dev._StewartEncoder__motors:
             self.assertIsInstance(m, int)
 
     def test_write(self):
@@ -113,4 +113,14 @@ class TestStewartEncoder(unittest.TestCase):
         self.mock.return_value.read.return_value = bytes([0x55, 0xFC, 0x0, 0x4, 0x1, 0x0, 0x0, 0x2, 0x1, 0x0, 0xFF, 0x0, 0x0, 0x0, 0x0, 0xE, 0x38, 0x7D, 0xB9])
         with self.assertRaises(controller.UnsupportedFirmware):
             controller.StewartEncoder()
+    
+    def test_reset_encoder_all(self):
+        self.dev.reset_encoder()
+        self.assertEqual(self.dev._StewartEncoder__en, 0b111111 << 2)
+        self.assertIsInstance(self.dev._StewartEncoder__en, int)
+    
+    def test_reset_encoder_multi(self):
+        self.dev.reset_encoder([1,3,5])
+        self.assertEqual(self.dev._StewartEncoder__en, 0b010101 << 2)
+        self.assertIsInstance(self.dev._StewartEncoder__en, int)
         
