@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
 	name="acrome",
-	version="0.1.1",
+	version="0.3.0",
 	author="Umut Ediz",
 	author_email="umutediz@acrome.net",
 	description="Hardware abstraction library for Acrome Robotics products",
@@ -21,6 +21,6 @@ setuptools.setup(
 		"Operating System :: OS Independent",
 	],
 	packages=setuptools.find_packages(exclude=['tests', 'test']),
-	install_requires=["pyserial", "crccheck"],
+	install_requires=["pyserial", "crccheck", "stm32loader==0.5.1", "requests", "packaging"],
 	python_requires=">=3.6"
 )

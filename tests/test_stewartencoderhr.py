@@ -3,14 +3,14 @@ import unittest.mock
 from unittest.mock import patch
 from acrome import controller
 
-class TestStewart(unittest.TestCase):
+class TestStewartEncoderHR(unittest.TestCase):
     def setUp(self) -> None:
         patcher = patch("acrome.controller.serial.Serial", autospec=True)
         self.mock = patcher.start()
         self.addCleanup(patcher.stop)
         self.mock.reset_mock()
         self.mock.return_value.read.return_value = bytes([0x55, 0xFC, 0x0, 0x5, 0x1, 0x0, 0x0, 0x2, 0x1, 0x0, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x8, 0xDB, 0x8B, 0xBE])
-        self.dev = controller.Stewart()
+        self.dev = controller.StewartEncoderHR()
         self.mock.reset_mock()
 
     def tearDown(self):
@@ -18,39 +18,39 @@ class TestStewart(unittest.TestCase):
 
     def test_enable(self):
         self.dev.enable(True)
-        self.assertTrue(self.dev._Stewart__en)
-        self.assertIsInstance(self.dev._Stewart__en, int)
+        self.assertTrue(self.dev._StewartEncoderHR__en)
+        self.assertIsInstance(self.dev._StewartEncoderHR__en, int)
 
         self.dev.enable(False)
-        self.assertFalse(self.dev._Stewart__en)
-        self.assertIsInstance(self.dev._Stewart__en, int)
+        self.assertFalse(self.dev._StewartEncoderHR__en)
+        self.assertIsInstance(self.dev._StewartEncoderHR__en, int)
         
         self.dev.enable(3)
-        self.assertTrue(self.dev._Stewart__en)
-        self.assertIsInstance(self.dev._Stewart__en, int)
+        self.assertTrue(self.dev._StewartEncoderHR__en)
+        self.assertIsInstance(self.dev._StewartEncoderHR__en, int)
 
         self.dev.enable(4)
-        self.assertFalse(self.dev._Stewart__en)
-        self.assertIsInstance(self.dev._Stewart__en, int)
+        self.assertFalse(self.dev._StewartEncoderHR__en)
+        self.assertIsInstance(self.dev._StewartEncoderHR__en, int)
 
     def test_set_motors_valid_values(self):
         for mt in range(-self.dev.__class__._MAX_MT_ABS, self.dev.__class__._MAX_MT_ABS+1):
             self.dev.set_motors([mt] * 6)
-            self.assertEqual(self.dev._Stewart__motors, [mt] * 6)
+            self.assertEqual(self.dev._StewartEncoderHR__motors, [mt] * 6)
         
-        for m in self.dev._Stewart__motors:
+        for m in self.dev._StewartEncoderHR__motors:
             self.assertIsInstance(m, int)
         
     def test_set_motors_invalid_values(self):
         self.dev.set_motors([99999] * 6)
-        self.assertEqual(self.dev._Stewart__motors, [self.dev.__class__._MAX_MT_ABS] * 6)
-        for m in self.dev._Stewart__motors:
+        self.assertEqual(self.dev._StewartEncoderHR__motors, [self.dev.__class__._MAX_MT_ABS] * 6)
+        for m in self.dev._StewartEncoderHR__motors:
             self.assertIsInstance(m, int)
 
         self.dev.set_motors([-99999] * 6)
-        self.assertEqual(self.dev._Stewart__motors, [-self.dev.__class__._MAX_MT_ABS] * 6)
+        self.assertEqual(self.dev._StewartEncoderHR__motors, [-self.dev.__class__._MAX_MT_ABS] * 6)
         
-        for m in self.dev._Stewart__motors:
+        for m in self.dev._StewartEncoderHR__motors:
             self.assertIsInstance(m, int)
 
     def test_write(self):
@@ -60,11 +60,11 @@ class TestStewart(unittest.TestCase):
         with patch.object(controller.Controller, '_writebus') as wr:
             self.dev._write()
         
-        wr.assert_called_once_with(bytes([0x55, 0xBE, 0x1, 0x64, 0x0, 0x38, 0xFF, 0x2C, 0x1, 0x70, 0xFE, 0xF4, 0x1, 0xA8, 0xFD, 0x52, 0x9A, 0xEF, 0xB7]))
+        wr.assert_called_once_with(bytes([0x55, 0xC1, 0x1, 0x64, 0x0, 0x38, 0xFF, 0x2C, 0x1, 0x70, 0xFE, 0xF4, 0x1, 0xA8, 0xFD, 0x17, 0x7B, 0x7F, 0x53]))
 
     def test_read(self):
         #POS 50,63,85,117,756,3721
-        self.mock.return_value.read.return_value = bytes([0x55, 0xBE, 0x32, 0x0, 0x3F, 0x0, 0x55, 0x0, 0x75, 0x0, 0xF4, 0x2, 0x89, 0xE, 0x9A, 0x99, 0xCC, 0x42, 0x9A, 0x19, 0x59, 0x43, 0x33, 0xF3, 0xB3, 0x43, 0x90, 0xC5, 0xF0, 0x59])
+        self.mock.return_value.read.return_value = bytes([0x55, 0xC1, 0x32, 0x0, 0x0, 0x0, 0x3F, 0x0, 0x0, 0x0, 0x55, 0x0, 0x0, 0x0, 0x75, 0x0, 0x0, 0x0, 0xF4, 0x2, 0x0, 0x0, 0x89, 0xE, 0x0, 0x0, 0x9A, 0x99, 0xCC, 0x42, 0x9A, 0x19, 0x59, 0x43, 0x33, 0xF3, 0xB3, 0x43, 0xF3, 0x9C, 0xE1, 0x1A])
     
         self.dev._read()
 
@@ -107,4 +107,9 @@ class TestStewart(unittest.TestCase):
     def test_hw_version_enforce(self):
         self.mock.return_value.read.return_value = bytes([0x55, 0xFC, 0x0, 0x5, 0x1, 0x0, 0x0, 0x1, 0x1, 0x0, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x56, 0xBE, 0x69, 0x52])
         with self.assertRaises(controller.UnsupportedHardware):
-            controller.Stewart()
+            controller.StewartEncoderHR()
+    
+    def test_fw_version_enforce(self):
+        self.mock.return_value.read.return_value = bytes([0x55, 0xFC, 0x0, 0x4, 0x1, 0x0, 0x0, 0x2, 0x1, 0x0, 0xFF, 0x0, 0x0, 0x0, 0x0, 0xE, 0x38, 0x7D, 0xB9])
+        with self.assertRaises(controller.UnsupportedFirmware):
+            controller.StewartEncoderHR()
