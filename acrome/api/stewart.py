@@ -76,9 +76,8 @@ if __name__ == '__main__':
             mot_vals = dev.inverse_kinematics(**(json.loads(request.data))['setpoint'])
             en = (json.loads(request.data))['enable']
             #Validate given setpoints against available workspace
-            for mv in mot_vals:
-                if mv > 4095 or mv < 0:
-                    return Response(status=422)
+            if any([mt < 0 for mt in mot_vals]):
+                return Response(status=422)
             
             sp_q.put_nowait({'enable':en, 'motors':mot_vals})
             return Response(status=200)

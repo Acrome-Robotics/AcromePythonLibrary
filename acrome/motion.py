@@ -202,6 +202,12 @@ class AutoStewart(controller.Stewart):
 
         vectorel_length = [np.linalg.norm(jcoord-bcoord) - self.__leg_len_retracted for jcoord, bcoord in zip(platform_joint_coords, bottom_mt_coords) ]
 
+        for leg_len in vectorel_length:
+            if self.__leg_len_retracted <= leg_len + self.__leg_len_retracted <= self.__leg_len_extended:
+                pass
+            else:
+                return [-1] * 6
+
         return list(map(mm2raw, vectorel_length, self.__pos_max, self.__pos_min))
     
     def generate_trajectory(self, first_pos:list, second_pos:list, duration):
