@@ -396,9 +396,10 @@ class StewartEncoder(Stewart):
         super().__init__(portname=portname, baudrate=baudrate)
         self.position = [0] * 6
         self.imu = [0] * 3
+
         board_info = self.get_board_info()
-        if parse_version(board_info['Hardware Version']) <= parse_version('1.1.0'):
-            raise NotImplementedError("Stewart Encoder is only available on Acrome Controller hardware version 1.2.0 or later. Your version is {}".format(board_info['Hardware Version']))
+        if parse_version(board_info['Software Version']) < parse_version('1.5.0'):
+            raise UnsupportedFirmware("Stewart is only available on Acrome Controller software version 1.5.0 or later. Your version is {}".format(board_info['Software Version']))
 
     def __del__(self):
         super().__del__()
