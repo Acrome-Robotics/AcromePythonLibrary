@@ -331,7 +331,7 @@ class Delta(Controller):
 
 class Stewart(Controller):
     _DEVID = 0xBE
-    _MAX_MT_ABS = 1000
+    _MAX_MT_ABS = 950
     _RECEIVE_COUNT = 30
 
     def __init__(self, portname="/dev/serial0", baudrate=115200):
