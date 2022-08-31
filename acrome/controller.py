@@ -5,6 +5,7 @@ from stm32loader.main import main as stm32loader_main
 import tempfile
 import requests
 import hashlib
+from packaging.version import parse as parse_version
 
 class Controller():
     _HEADER = 0x55
@@ -375,3 +376,19 @@ class Stewart(Controller):
                 self.imu = list(struct.unpack("<fff", data[14:26]))
                 return True
         return False
+
+class StewartEncoder(Stewart):
+    _DEVID = 0xC0
+    _MAX_MT_ABS = 1000
+    _RECEIVE_COUNT = 30
+
+    def __init__(self, portname="/dev/serial0", baudrate=115200):
+        super().__init__(portname=portname, baudrate=baudrate)
+        self.position = [0] * 6
+        self.imu = [0] * 3
+        board_info = self.get_board_info()
+        if parse_version(board_info['Hardware Version']) <= parse_version('1.1.0'):
+            raise NotImplementedError("Stewart Encoder is only available on Acrome Controller hardware version 1.2.0 or later. Your version is {}".format(board_info['Hardware Version']))
+
+    def __del__(self):
+        super().__del__()
