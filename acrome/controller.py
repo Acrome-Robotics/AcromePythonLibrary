@@ -5,6 +5,12 @@ from stm32loader.main import main as stm32loader_main
 import tempfile
 import requests
 import hashlib
+from packaging.version import parse as parse_version
+
+class UnsupportedFirmware(Exception):
+    pass
+class UnsupportedHardware(Exception):
+    pass
 
 class Controller():
     _HEADER = 0x55
@@ -22,6 +28,7 @@ class Controller():
         self.__ph = serial.Serial(port=portname, baudrate=baudrate, timeout=0.1)
         self.__serial_settings = self.__ph.get_settings()
         self.__fw_file = None
+        self.board_info = self.get_board_info()
 
     def __del__(self):
         try:
@@ -40,7 +47,7 @@ class Controller():
 
     def _readbus(self, byte_count):
         data = self.__ph.read(byte_count)
-        if len(data) > 0:
+        if len(data) == byte_count:
             if data[0] == self.__class__._HEADER:
                 if self._crc32(data[:-4]) == data[-4:]:
                     return data
@@ -346,6 +353,10 @@ class Stewart(Controller):
         self.position = [0] * 6
         self.imu = [0] * 3
 
+        if parse_version(self.board_info['Hardware Version']) <= parse_version('1.1.0'):
+            raise UnsupportedHardware("Stewart is only available on Acrome Controller hardware version 1.2.0 or later. Your version is {}".format(self.board_info['Hardware Version']))
+
+
     def __del__(self):
         super().__del__()
 
@@ -373,5 +384,61 @@ class Stewart(Controller):
             if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
                 self.position = list(struct.unpack("<HHHHHH", data[2:14]))
                 self.imu = list(struct.unpack("<fff", data[14:26]))
+                return True
+        return False
+
+class StewartEncoder(Stewart):
+    _DEVID = 0xC0
+    _MAX_MT_ABS = 1000
+    _RECEIVE_COUNT = 30
+
+    def __init__(self, portname="/dev/serial0", baudrate=115200):
+        super().__init__(portname=portname, baudrate=baudrate)
+        self.position = [0] * 6
+        self.imu = [0] * 3
+
+        if parse_version(self.board_info['Software Version']) < parse_version('1.5.0'):
+            raise UnsupportedFirmware("Stewart is only available on Acrome Controller software version 1.5.0 or later. Your version is {}".format(self.board_info['Software Version']))
+
+    def __del__(self):
+        super().__del__()
+
+class StewartEncoderHR(StewartEncoder):
+    _DEVID = 0xC1
+    _MAX_MT_ABS = 1000
+    _RECEIVE_COUNT = 42
+
+    def __init__(self, portname="/dev/serial0", baudrate=115200):
+        super().__init__(portname=portname, baudrate=baudrate)
+        self.__en = 0
+        self.__motors = [0] * 6
+        self.position = [0] * 6
+        self.imu = [0] * 3
+
+    def enable(self, en):
+        self.__en = en & 0x01
+
+    def set_motors(self, motors):
+        if len(motors) != 6:
+            raise Exception("Argument motors must have length of 6")
+
+        for i, motor in enumerate(motors):
+            if motor != 0:
+                self.__motors[i] = int(motor if abs(motor) <= self.__class__._MAX_MT_ABS else self.__class__._MAX_MT_ABS * (motor / abs(motor)))
+            else:
+                self.__motors[i] = int(motor)
+
+
+    def _write(self):
+        data = struct.pack("<BBBhhhhhh", self.__class__._HEADER, self.__class__._DEVID, self.__en, *self.__motors)
+        data += self._crc32(data)
+        super()._writebus(data)
+
+    def _read(self):
+        data = super()._readbus(self.__class__._RECEIVE_COUNT)
+        if data is not None:
+            if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
+                self.position = list(struct.unpack("<IIIIII", data[2:26]))
+                self.imu = list(struct.unpack("<fff", data[26:38]))
                 return True
         return False

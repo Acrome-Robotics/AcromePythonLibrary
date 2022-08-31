@@ -8,11 +8,11 @@ class TestOneDOF(unittest.TestCase):
         patcher = patch("acrome.controller.serial.Serial", autospec=True)
         self.mock = patcher.start()
         self.addCleanup(patcher.stop)
-        self.mock.reset_mock()
         self.dev = controller.OneDOF()
+        self.mock.reset_mock()
 
     def tearDown(self):
-        self.dev.__init__()
+        pass
 
     def test_set_speed_valid_values(self):
         for speed in range(-1000,1000+1):

@@ -8,8 +8,8 @@ class TestBallBeam(unittest.TestCase):
         patcher = patch("acrome.controller.serial.Serial", autospec=True)
         self.mock = patcher.start()
         self.addCleanup(patcher.stop)
-        self.mock.reset_mock()
         self.dev = controller.BallBeam()
+        self.mock.reset_mock()
 
     def tearDown(self):
         pass
