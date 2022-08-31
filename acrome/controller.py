@@ -28,6 +28,7 @@ class Controller():
         self.__ph = serial.Serial(port=portname, baudrate=baudrate, timeout=0.1)
         self.__serial_settings = self.__ph.get_settings()
         self.__fw_file = None
+        self.board_info = self.get_board_info()
 
     def __del__(self):
         try:
@@ -352,9 +353,8 @@ class Stewart(Controller):
         self.position = [0] * 6
         self.imu = [0] * 3
 
-        board_info = self.get_board_info()
-        if parse_version(board_info['Hardware Version']) <= parse_version('1.1.0'):
-            raise UnsupportedHardware("Stewart is only available on Acrome Controller hardware version 1.2.0 or later. Your version is {}".format(board_info['Hardware Version']))
+        if parse_version(self.board_info['Hardware Version']) <= parse_version('1.1.0'):
+            raise UnsupportedHardware("Stewart is only available on Acrome Controller hardware version 1.2.0 or later. Your version is {}".format(self.board_info['Hardware Version']))
 
 
     def __del__(self):
@@ -397,9 +397,8 @@ class StewartEncoder(Stewart):
         self.position = [0] * 6
         self.imu = [0] * 3
 
-        board_info = self.get_board_info()
-        if parse_version(board_info['Software Version']) < parse_version('1.5.0'):
-            raise UnsupportedFirmware("Stewart is only available on Acrome Controller software version 1.5.0 or later. Your version is {}".format(board_info['Software Version']))
+        if parse_version(self.board_info['Software Version']) < parse_version('1.5.0'):
+            raise UnsupportedFirmware("Stewart is only available on Acrome Controller software version 1.5.0 or later. Your version is {}".format(self.board_info['Software Version']))
 
     def __del__(self):
         super().__del__()
