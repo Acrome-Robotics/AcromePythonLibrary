@@ -14,35 +14,26 @@ Index = enum.IntEnum('Index', [
 	'ErrorCount',
 	'CurrentPosition',
 	'CurrentSpeed',
-	'CurrentAcceleration',
 	'LimitSwitchStatus',
 	'BusVoltage',
 	'V5Voltage',
 	'GoalPositionSpeed',
-	'PositionTolerance',
-	'SpeedTolerance',
+	'Acceleration',
 	'MinSpeed',
 	'MaxSpeed',
 	'MinPosition',
 	'MaxPosition',
 	'MotionProfile',
 	'Baudrate',
-	'Jerk',
 	'TorqueEn',
 	'PIOMode0',
 	'PIOMode1',
 	'PIOMode2',
 	'PIOMode3',
-	'PIOMode4',
-	'PIOMode5',
-	'PIOMode6',
 	'PIOData0',
 	'PIOData1',
 	'PIOData2',
 	'PIOData3',
-	'PIOData4',
-	'PIOData5',
-	'PIOData6',
 	'ExternalEncoder',
 	'CRCValue',
 ], start=0)
@@ -93,37 +84,28 @@ class Premium():
 			_Data(Index.SoftwareVersion, 'I'),
 			_Data(Index.HardwareVersion, 'I'),
 			_Data(Index.ErrorCount, 'I'),
-			_Data(Index.CurrentPosition, 'I'),
+			_Data(Index.CurrentPosition, 'i'),
 			_Data(Index.CurrentSpeed, 'I'),
-			_Data(Index.CurrentAcceleration, 'I'),
 			_Data(Index.LimitSwitchStatus, 'B'),
 			_Data(Index.BusVoltage, 'H'),
 			_Data(Index.V5Voltage, 'H'),
-			_Data(Index.GoalPositionSpeed, 'I'),
-			_Data(Index.PositionTolerance, 'I'),
-			_Data(Index.SpeedTolerance, 'I'),
+			_Data(Index.GoalPositionSpeed, 'i'),
+			_Data(Index.Acceleration, 'I'),
 			_Data(Index.MinSpeed, 'I'),
 			_Data(Index.MaxSpeed, 'I'),
-			_Data(Index.MinPosition, 'I'),
-			_Data(Index.MaxPosition, 'I'),
+			_Data(Index.MinPosition, 'i'),
+			_Data(Index.MaxPosition, 'i'),
 			_Data(Index.MotionProfile, 'B'),
 			_Data(Index.Baudrate, 'I'),
-			_Data(Index.Jerk, 'I'),
 			_Data(Index.TorqueEn, 'B'),
 			_Data(Index.PIOMode0, 'B'),
 			_Data(Index.PIOMode1, 'B'),
 			_Data(Index.PIOMode2, 'B'),
 			_Data(Index.PIOMode3, 'B'),
-			_Data(Index.PIOMode4, 'B'),
-			_Data(Index.PIOMode5, 'B'),
-			_Data(Index.PIOMode6, 'B'),
 			_Data(Index.PIOData0, 'I'),
 			_Data(Index.PIOData1, 'I'),
 			_Data(Index.PIOData2, 'I'),
 			_Data(Index.PIOData3, 'I'),
-			_Data(Index.PIOData4, 'I'),
-			_Data(Index.PIOData5, 'I'),
-			_Data(Index.PIOData6, 'I'),
 			_Data(Index.ExternalEncoder, 'I'),
 			_Data(Index.CRCValue, 'I')
 		]
@@ -185,6 +167,7 @@ class Premium():
 		fmt_str = '<' + ''.join([var.type() for var in self.vars[:4]])
 		struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:4]]))
 		struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[Index.CRCValue].size()
+		self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
 		self.__ack_size = 0
 		return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
 	
@@ -194,7 +177,7 @@ class Premium():
 		struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:4]]))
 		struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[Index.CRCValue].size()
 		self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
-		self.__ack_size = struct.calcsize(fmt_str.join(['B' + var.type() for var in self.vars[4:]])) + struct.calcsize(fmt_str + self.vars[Index.CRCValue].type())
+		self.__ack_size = struct.calcsize(fmt_str + self.vars[Index.CRCValue].type())
 		return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
 	
 	def ping(self):
@@ -213,7 +196,8 @@ class Master():
 			raise ValueError("Baudrate must be in range of 1200 to 9.5M")
 		else:
 			self.__baudrate = baudrate
-			self.__ph = serial.Serial(port=portname, baudrate=self.__baudrate, timeout=0.01)
+			self.__post_sleep = 10/self.__baudrate
+			self.__ph = serial.Serial(port=portname, baudrate=self.__baudrate, timeout=0.1)
 
 	def __del__(self):
 		try:
@@ -223,9 +207,9 @@ class Master():
 
 	def __write_bus(self, data):
 		self.__ph.write(data)
-		time.sleep(10/self.__baudrate)
 
 	def __read_bus(self, size) -> bytes:
+		self.__ph.flushInput()
 		return self.__ph.read(size=size)
 
 	def attach(self, premium:Premium):
@@ -253,6 +237,7 @@ class Master():
 		if ack:
 			if self.__read_ack(id):
 				return [self.__driver_list[id].vars[index].value() for index in index_list]
+		time.sleep(self.__post_sleep)
 		return [None]
 
 	def get_variables(self, id, index_list) -> list:
@@ -278,6 +263,7 @@ class Master():
 
 	def reboot(self, id):
 		self.__write_bus(self.__driver_list[id].reboot())
+		time.sleep(self.__post_sleep)
 
 	def EEPROM_write(self, id, ack=False):
 		index_list = [int(index) for index in Index]
@@ -285,6 +271,7 @@ class Master():
 		if ack:
 			if self.__read_ack(id):
 				return [self.__driver_list[id].vars[index].value() for index in index_list]
+		time.sleep(self.__post_sleep)
 		return [None]
 
 	def ping(self, id):
