@@ -8,8 +8,8 @@ class TestDelta(unittest.TestCase):
         patcher = patch("acrome.controller.serial.Serial", autospec=True)
         self.mock = patcher.start()
         self.addCleanup(patcher.stop)
-        self.mock.reset_mock()
         self.dev = controller.Delta()
+        self.mock.reset_mock()
 
     def tearDown(self):
         pass
@@ -18,13 +18,19 @@ class TestDelta(unittest.TestCase):
         for mt in range(self.dev.__class__._MIN_MT_POS, self.dev.__class__._MAX_MT_POS):
             self.dev.set_motors([mt] * 3)
             self.assertEqual(self.dev._Delta__motors, [mt] * 3)
+            for m in self.dev._Delta__motors:
+                self.assertIsInstance(m, int)
         
     def test_set_motors_invalid_values(self):
         self.dev.set_motors([99999] * 3)
         self.assertEqual(self.dev._Delta__motors, [self.dev.__class__._MAX_MT_POS] * 3)
-
+        for m in self.dev._Delta__motors:
+            self.assertIsInstance(m, int)
+        
         self.dev.set_motors([-99999] * 3)
         self.assertEqual(self.dev._Delta__motors, [self.dev.__class__._MIN_MT_POS] * 3)
+        for m in self.dev._Delta__motors:
+            self.assertIsInstance(m, int)
 
     def test_pick(self):
         self.dev.pick(True)

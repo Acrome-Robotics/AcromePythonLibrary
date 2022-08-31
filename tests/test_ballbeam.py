@@ -8,8 +8,8 @@ class TestBallBeam(unittest.TestCase):
         patcher = patch("acrome.controller.serial.Serial", autospec=True)
         self.mock = patcher.start()
         self.addCleanup(patcher.stop)
-        self.mock.reset_mock()
         self.dev = controller.BallBeam()
+        self.mock.reset_mock()
 
     def tearDown(self):
         pass
@@ -21,10 +21,12 @@ class TestBallBeam(unittest.TestCase):
         
     def test_set_servo_invalid_values(self):
         self.dev.set_servo(99999999)
-        self.assertEqual(self.dev._BallBeam__servo, 1000)
+        self.assertEqual(self.dev._BallBeam__servo, self.dev.__class__._MAX_SERVO_ABS)
+        self.assertTrue(isinstance(self.dev._BallBeam__servo, int))
 
         self.dev.set_servo(-99999999)
-        self.assertEqual(self.dev._BallBeam__servo, -1000)
+        self.assertEqual(self.dev._BallBeam__servo, -self.dev.__class__._MAX_SERVO_ABS)
+        self.assertTrue(isinstance(self.dev._BallBeam__servo, int))
 
     def test_write(self):
         self.dev.set_servo(700)
