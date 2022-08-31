@@ -194,9 +194,10 @@ The controller module provides 6 different classes  for interacting with 5 diffe
 
         This attribute returns a list of 3 integers that contains the current values of the motor positions. List elements are Motor 1 Position, Motor 2 Position, and Motor 3 Position respectively.
 
-- ## Stewart Class
+- ## Stewart, StewartEncoder and StewartEncoderHR Classes
 
-    This class provides an interface with Stewart Platforms via Acrome Controller.
+    These classes provides an interface with Stewart Platforms via Acrome Controller.
+    While Stewart Platform uses analog position feedback, StewartEncoder and StewartEncoderHR uses incremental encoders for position feedback. StewartEncoder and StewartEncoderHR only differs in communication structure. StewartEncoderHR provides 32 bits wide encoder resolution while StewartEncoder provides only 16 bits. 16 bits encoder resolution is enough for 4" and 8" versions of Stewart Platforms and no need to bloat serial communication with extra 16 bits of data per encoder.
 
     * #### `__init__(self, portname="/dev/serial0", baudrate=115200)`
         
@@ -208,6 +209,14 @@ The controller module provides 6 different classes  for interacting with 5 diffe
         **`Return:`** *None*
 
         This method enables the power stages of the Stewart Platform motors and should be called prior to setting speed.
+    
+    * #### `reset_encoder(self, motor_num=[1,2,3,4,5,6])`
+        **`Return:`** *None*
+
+        This method resets the encoder of the motor at the given index to 0.
+
+        > **Note:** This method is only available in StewartEncoder and StewartEncoderHR classes.
+
     * #### `set_motors(self, motors)`
 
         **`Return:`** *None*
