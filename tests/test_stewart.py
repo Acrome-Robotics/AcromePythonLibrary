@@ -9,6 +9,8 @@ class TestStewart(unittest.TestCase):
         self.mock = patcher.start()
         self.addCleanup(patcher.stop)
         self.mock.reset_mock()
+        self.mock.return_value.read.return_value = bytes([0x55, 0xFC, 0x0, 0x5, 0x1, 0x0, 0x0, 0x2, 0x1, 0x0, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x8, 0xDB, 0x8B, 0xBE])
+        self.mock.reset_mock()
         self.dev = controller.Stewart()
 
     def tearDown(self):
