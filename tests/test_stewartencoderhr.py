@@ -113,3 +113,13 @@ class TestStewartEncoderHR(unittest.TestCase):
         self.mock.return_value.read.return_value = bytes([0x55, 0xFC, 0x0, 0x4, 0x1, 0x0, 0x0, 0x2, 0x1, 0x0, 0xFF, 0x0, 0x0, 0x0, 0x0, 0xE, 0x38, 0x7D, 0xB9])
         with self.assertRaises(controller.UnsupportedFirmware):
             controller.StewartEncoderHR()
+    
+    def test_reset_encoder_all(self):
+        self.dev.reset_encoder()
+        self.assertEqual(self.dev._StewartEncoderHR__en, 0b111111 << 2)
+        self.assertIsInstance(self.dev._StewartEncoderHR__en, int)
+    
+    def test_reset_encoder_multi(self):
+        self.dev.reset_encoder([1,3,5])
+        self.assertEqual(self.dev._StewartEncoderHR__en, 0b010101 << 2)
+        self.assertIsInstance(self.dev._StewartEncoderHR__en, int)

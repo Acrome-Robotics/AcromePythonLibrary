@@ -361,7 +361,7 @@ class Stewart(Controller):
         super().__del__()
 
     def enable(self, en):
-        self.__en = en & 0x01
+        self.__en = (self.__en & ~0x01) | (en & 0x01)
 
     def set_motors(self, motors):
         if len(motors) != 6:
@@ -377,6 +377,7 @@ class Stewart(Controller):
         data = struct.pack("<BBBhhhhhh", self.__class__._HEADER, self.__class__._DEVID, self.__en, *self.__motors)
         data += self._crc32(data)
         super()._writebus(data)
+        self.__en &= 0x01
 
     def _read(self):
         data = super()._readbus(self.__class__._RECEIVE_COUNT)
@@ -387,21 +388,61 @@ class Stewart(Controller):
                 return True
         return False
 
-class StewartEncoder(Stewart):
+class StewartEncoder(Controller):
     _DEVID = 0xC0
     _MAX_MT_ABS = 1000
     _RECEIVE_COUNT = 30
 
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         super().__init__(portname=portname, baudrate=baudrate)
+        self.__en = 0
+        self.__motors = [0] * 6
         self.position = [0] * 6
         self.imu = [0] * 3
+
+        if parse_version(self.board_info['Hardware Version']) <= parse_version('1.1.0'):
+            raise UnsupportedHardware("Stewart is only available on Acrome Controller hardware version 1.2.0 or later. Your version is {}".format(self.board_info['Hardware Version']))
 
         if parse_version(self.board_info['Software Version']) < parse_version('1.5.0'):
             raise UnsupportedFirmware("Stewart is only available on Acrome Controller software version 1.5.0 or later. Your version is {}".format(self.board_info['Software Version']))
 
     def __del__(self):
         super().__del__()
+
+    def enable(self, en):
+        self.__en = (self.__en & ~0x01) | (en & 0x01)
+    
+    def reset_encoder(self, motor_num=[1,2,3,4,5,6]):
+        for mt in motor_num:
+            if (mt <= 6 and mt >= 1):
+                self.__en |= 1 << (mt - 1 + 2)
+            else:
+                raise ValueError("Motor index can not be lower than 1 or higher than 6!")
+
+    def set_motors(self, motors):
+        if len(motors) != 6:
+            raise Exception("Argument motors must have length of 6")
+
+        for i, motor in enumerate(motors):
+            if motor != 0:
+                self.__motors[i] = int(motor if abs(motor) <= self.__class__._MAX_MT_ABS else self.__class__._MAX_MT_ABS * (motor / abs(motor)))
+            else:
+                self.__motors[i] = int(motor)
+
+    def _write(self):
+        data = struct.pack("<BBBhhhhhh", self.__class__._HEADER, self.__class__._DEVID, self.__en, *self.__motors)
+        data += self._crc32(data)
+        super()._writebus(data)
+        self.__en &= 0x01
+
+    def _read(self):
+        data = super()._readbus(self.__class__._RECEIVE_COUNT)
+        if data is not None:
+            if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
+                self.position = list(struct.unpack("<HHHHHH", data[2:14]))
+                self.imu = list(struct.unpack("<fff", data[14:26]))
+                return True
+        return False
 
 class StewartEncoderHR(StewartEncoder):
     _DEVID = 0xC1
@@ -416,7 +457,14 @@ class StewartEncoderHR(StewartEncoder):
         self.imu = [0] * 3
 
     def enable(self, en):
-        self.__en = en & 0x01
+        self.__en = (self.__en & ~0x01) | (en & 0x01)
+
+    def reset_encoder(self, motor_num=[1,2,3,4,5,6]):
+        for mt in motor_num:
+            if (mt <= 6 and mt >= 1):
+                self.__en |= 1 << (mt - 1 + 2)
+            else:
+                raise ValueError("Motor index can not be lower than 1 or higher than 6!")
 
     def set_motors(self, motors):
         if len(motors) != 6:
@@ -433,6 +481,7 @@ class StewartEncoderHR(StewartEncoder):
         data = struct.pack("<BBBhhhhhh", self.__class__._HEADER, self.__class__._DEVID, self.__en, *self.__motors)
         data += self._crc32(data)
         super()._writebus(data)
+        self.__en &= 0x01
 
     def _read(self):
         data = super()._readbus(self.__class__._RECEIVE_COUNT)
