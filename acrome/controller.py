@@ -344,14 +344,14 @@ class Delta(Controller):
 class Stewart(Controller):
     _DEVID = 0xBE
     _MAX_MT_ABS = 1000
-    _RECEIVE_COUNT = 30
+    _RECEIVE_COUNT = 54
 
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         super().__init__(portname=portname, baudrate=baudrate)
         self.__en = 0
         self.__motors = [0] * 6
         self.position = [0] * 6
-        self.imu = [0] * 3
+        self.imu = [0] * 9
 
         if parse_version(self.board_info['Hardware Version']) <= parse_version('1.1.0'):
             raise UnsupportedHardware("Stewart is only available on Acrome Controller hardware version 1.2.0 or later. Your version is {}".format(self.board_info['Hardware Version']))
@@ -384,7 +384,7 @@ class Stewart(Controller):
         if data is not None:
             if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
                 self.position = list(struct.unpack("<HHHHHH", data[2:14]))
-                self.imu = list(struct.unpack("<fff", data[14:26]))
+                self.imu = list(struct.unpack("<fffffffff", data[14:50]))
                 return True
         return False
 
