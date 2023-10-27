@@ -22,13 +22,16 @@ class Controller():
     _CMD_BL = (1 << 1)
     _STATUS_KEY_LIST = ['EEPROM', 'IMU', 'Touchscreen Serial', 'Touchscreen Analog', 'Delta', 'Software Version', 'Hardware Version']
 
-    __release_url = "https://api.github.com/repos/acrome-robotics/Acrome-Controller-Firmware/releases/{version}"
-
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         self.__ph = serial.Serial(port=portname, baudrate=baudrate, timeout=0.1)
         self.__serial_settings = self.__ph.get_settings()
         self.__fw_file = None
         self.board_info = self.get_board_info()
+
+        if parse_version(self.board_info["Hardware Version"]) < parse_version('2.0.0'):
+            self.__release_url = "https://api.github.com/repos/acrome-robotics/Acrome-Controller-Firmware/releases/{version}"
+        else:
+            self.__release_url = "https://api.github.com/repos/acrome-robotics/Acrome-Controller-Firmware-v2/releases/{version}"
 
     def __del__(self):
         try:
@@ -66,21 +69,22 @@ class Controller():
         self._writebus(data)
 
     def get_latest_version(self):
-        response = requests.get(url=self.__class__.__release_url.format(version='latest'))
+        response = requests.get(url=self.__release_url.format(version='latest'))
         if (response.status_code in [200, 302]):
             return(response.json()['tag_name'])
 
     def fetch_fw_binary(self, version=''):
 
         self.__fw_file = tempfile.NamedTemporaryFile("wb+")
-
+ 
         if version == '':
+            
             version='latest'
         else:
             version = 'tags/' + version
 
         #Get asset list from GitHub repository
-        response = requests.get(url=self.__class__.__release_url.format(version=version))
+        response = requests.get(url=self.__release_url.format(version=version))
         if (response.status_code in [200, 302]):
             assets = response.json()['assets']
 
