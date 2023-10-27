@@ -22,13 +22,18 @@ class Controller():
     _CMD_BL = (1 << 1)
     _STATUS_KEY_LIST = ['EEPROM', 'IMU', 'Touchscreen Serial', 'Touchscreen Analog', 'Delta', 'Software Version', 'Hardware Version']
 
-    __release_url = "https://api.github.com/repos/acrome-robotics/Acrome-Controller-Firmware/releases/{version}"
-
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         self.__ph = serial.Serial(port=portname, baudrate=baudrate, timeout=0.1)
         self.__serial_settings = self.__ph.get_settings()
         self.__fw_file = None
         self.board_info = self.get_board_info()
+        self.__release_url = None
+
+        if self.board_info is not None:
+            if parse_version(self.board_info["Hardware Version"]) < parse_version('2.0.0'):
+                self.__release_url = "https://api.github.com/repos/acrome-robotics/Acrome-Controller-Firmware/releases/{version}"
+            else:
+                self.__release_url = "https://api.github.com/repos/acrome-robotics/Acrome-Controller-Firmware-v2/releases/{version}"
 
     def __del__(self):
         try:
@@ -66,21 +71,22 @@ class Controller():
         self._writebus(data)
 
     def get_latest_version(self):
-        response = requests.get(url=self.__class__.__release_url.format(version='latest'))
+        response = requests.get(url=self.__release_url.format(version='latest'))
         if (response.status_code in [200, 302]):
             return(response.json()['tag_name'])
 
     def fetch_fw_binary(self, version=''):
 
         self.__fw_file = tempfile.NamedTemporaryFile("wb+")
-
+ 
         if version == '':
+            
             version='latest'
         else:
             version = 'tags/' + version
 
         #Get asset list from GitHub repository
-        response = requests.get(url=self.__class__.__release_url.format(version=version))
+        response = requests.get(url=self.__release_url.format(version=version))
         if (response.status_code in [200, 302]):
             assets = response.json()['assets']
 
@@ -177,6 +183,7 @@ class Controller():
         else:
             raise NotImplementedError
 
+
 class OneDOF(Controller):
     _DEVID = 0xBA
     _EN_MASK = 1 << 0
@@ -228,6 +235,7 @@ class OneDOF(Controller):
                 return True
         return False
 
+
 class BallBeam(Controller):
     _DEVID = 0xBB
     _MAX_SERVO_ABS = 1000
@@ -259,6 +267,7 @@ class BallBeam(Controller):
                 self.position = struct.unpack("<h", data[2:4])[0]
                 return True
         return False
+
 
 class BallBalancingTable(Controller):
     _DEVID = 0xBC
@@ -296,6 +305,7 @@ class BallBalancingTable(Controller):
                 self.position = list(struct.unpack("<hh", data[2:6]))
                 return True
         return False
+
 
 class Delta(Controller):
     _DEVID = 0xBD
@@ -341,6 +351,55 @@ class Delta(Controller):
                 return True
         return False
 
+
+class Pendulum(Controller):
+    _DEVID = 0xBF
+    _MAX_MT_SPEED = 1000
+    _MIN_MT_SPEED = -1000
+    _EN_MASK = 1 << 0
+    _ENC1_RST_MASK = 1 << 1
+    _RECEIVE_COUNT = 10
+
+    def __init__(self, portname="/dev/serial0", baudrate=115200):
+        super().__init__(portname=portname, baudrate=baudrate)
+        self.__motor = 0
+        self.__config = 0
+        self.position = 0
+        self.encoder = 0
+
+    def __del__(self):
+        super().__del__()
+
+    def set_motor(self, motor):
+        if motor <= self.__class__._MAX_MT_SPEED and motor >= self.__class__._MIN_MT_SPEED:
+            self.__motor = int(motor)
+        else:
+            if motor >= self.__class__._MAX_MT_SPEED:
+                self.__motor = int(self.__class__._MAX_MT_SPEED)
+            else:
+                self.__motor = int(self.__class__._MIN_MT_SPEED)
+
+    def enable(self, en):
+        self.__config = (self.__config & ~self.__class__._EN_MASK) | (en & self.__class__._EN_MASK)
+
+    def reset_encoder_mt(self):
+        self.__config |= self.__class__._ENC1_RST_MASK
+
+    def _write(self):
+        data = struct.pack("<BBBh", self.__class__._HEADER, self.__class__._DEVID, self.__config, self.__motor)
+        data += self._crc32(data)
+        super()._writebus(data)
+
+    def _read(self):
+        data = super()._readbus(self.__class__._RECEIVE_COUNT)
+        if data is not None:
+            if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
+                self.position = list(struct.unpack("<H", data[2:4]))[0]
+                self.encoder = list(struct.unpack("<H", data[4:6]))[0]
+                return True
+        return False
+
+
 class Stewart(Controller):
     _DEVID = 0xBE
     _MAX_MT_ABS = 1000
@@ -351,11 +410,10 @@ class Stewart(Controller):
         self.__en = 0
         self.__motors = [0] * 6
         self.position = [0] * 6
-        self.imu = [0] * 3
+        self.imu = [0] * 9
 
         if parse_version(self.board_info['Hardware Version']) <= parse_version('1.1.0'):
             raise UnsupportedHardware("Stewart is only available on Acrome Controller hardware version 1.2.0 or later. Your version is {}".format(self.board_info['Hardware Version']))
-
 
     def __del__(self):
         super().__del__()
@@ -387,6 +445,7 @@ class Stewart(Controller):
                 self.imu = list(struct.unpack("<fff", data[14:26]))
                 return True
         return False
+
 
 class StewartEncoder(Controller):
     _DEVID = 0xC0
@@ -443,6 +502,7 @@ class StewartEncoder(Controller):
                 self.imu = list(struct.unpack("<fff", data[14:26]))
                 return True
         return False
+
 
 class StewartEncoderHR(StewartEncoder):
     _DEVID = 0xC1
