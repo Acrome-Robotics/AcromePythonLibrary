@@ -177,6 +177,7 @@ class Controller():
         else:
             raise NotImplementedError
 
+
 class OneDOF(Controller):
     _DEVID = 0xBA
     _EN_MASK = 1 << 0
@@ -228,6 +229,7 @@ class OneDOF(Controller):
                 return True
         return False
 
+
 class BallBeam(Controller):
     _DEVID = 0xBB
     _MAX_SERVO_ABS = 1000
@@ -259,6 +261,7 @@ class BallBeam(Controller):
                 self.position = struct.unpack("<h", data[2:4])[0]
                 return True
         return False
+
 
 class BallBalancingTable(Controller):
     _DEVID = 0xBC
@@ -296,6 +299,7 @@ class BallBalancingTable(Controller):
                 self.position = list(struct.unpack("<hh", data[2:6]))
                 return True
         return False
+
 
 class Delta(Controller):
     _DEVID = 0xBD
@@ -341,10 +345,59 @@ class Delta(Controller):
                 return True
         return False
 
+
+class Pendulum(Controller):
+    _DEVID = 0xBF
+    _MAX_MT_SPEED = 1000
+    _MIN_MT_SPEED = -1000
+    _EN_MASK = 1 << 0
+    _ENC1_RST_MASK = 1 << 1
+    _RECEIVE_COUNT = 10
+
+    def __init__(self, portname="/dev/serial0", baudrate=115200):
+        super().__init__(portname=portname, baudrate=baudrate)
+        self.__motor = 0
+        self.__config = 0
+        self.position = 0
+        self.encoder = 0
+
+    def __del__(self):
+        super().__del__()
+
+    def set_motor(self, motor):
+        if motor <= self.__class__._MAX_MT_SPEED and motor >= self.__class__._MIN_MT_SPEED:
+            self.__motor = int(motor)
+        else:
+            if motor >= self.__class__._MAX_MT_SPEED:
+                self.__motor = int(self.__class__._MAX_MT_SPEED)
+            else:
+                self.__motor = int(self.__class__._MIN_MT_SPEED)
+
+    def enable(self, en):
+        self.__config = (self.__config & ~self.__class__._EN_MASK) | (en & self.__class__._EN_MASK)
+
+    def reset_encoder_mt(self):
+        self.__config |= self.__class__._ENC1_RST_MASK
+
+    def _write(self):
+        data = struct.pack("<BBBh", self.__class__._HEADER, self.__class__._DEVID, self.__config, self.__motor)
+        data += self._crc32(data)
+        super()._writebus(data)
+
+    def _read(self):
+        data = super()._readbus(self.__class__._RECEIVE_COUNT)
+        if data is not None:
+            if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
+                self.position = list(struct.unpack("<H", data[2:4]))[0]
+                self.encoder = list(struct.unpack("<H", data[4:6]))[0]
+                return True
+        return False
+
+
 class Stewart(Controller):
     _DEVID = 0xBE
     _MAX_MT_ABS = 1000
-    _RECEIVE_COUNT = 54
+    _RECEIVE_COUNT = 30
 
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         super().__init__(portname=portname, baudrate=baudrate)
@@ -355,7 +408,6 @@ class Stewart(Controller):
 
         if parse_version(self.board_info['Hardware Version']) <= parse_version('1.1.0'):
             raise UnsupportedHardware("Stewart is only available on Acrome Controller hardware version 1.2.0 or later. Your version is {}".format(self.board_info['Hardware Version']))
-
 
     def __del__(self):
         super().__del__()
@@ -384,9 +436,10 @@ class Stewart(Controller):
         if data is not None:
             if data[self.__class__._ID_INDEX] == self.__class__._DEVID:
                 self.position = list(struct.unpack("<HHHHHH", data[2:14]))
-                self.imu = list(struct.unpack("<fffffffff", data[14:50]))
+                self.imu = list(struct.unpack("<fff", data[14:26]))
                 return True
         return False
+
 
 class StewartEncoder(Controller):
     _DEVID = 0xC0
@@ -443,6 +496,7 @@ class StewartEncoder(Controller):
                 self.imu = list(struct.unpack("<fff", data[14:26]))
                 return True
         return False
+
 
 class StewartEncoderHR(StewartEncoder):
     _DEVID = 0xC1
