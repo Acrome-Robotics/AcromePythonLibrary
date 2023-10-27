@@ -23,14 +23,15 @@ class StewartStepper():
     _CMD_NULL = 0
     _CMD_PING = 0x01
     _CMD_GENERAL_CALL = 0x02
-    _CMD_CALIB = 0x03
-    _CMD_SET_REF = 0x04
+    _CMD_CALIB = 0x04
+    _CMD_SET_REF = 0x03
     _CMD_REBOOT = (1 << 6)
     _CMD_BL = (1 << 7)
 
     def __init__(self, portname="/dev/serial0", baudrate=115200):
         self.__ph = serial.Serial(port=portname, baudrate=baudrate, timeout=0.1)
         self.__en = 0
+        self.status = 0
         self.__motors = [0] * 6
         self.position = [0] * 6
         self.imu = [0] * 3
@@ -98,14 +99,43 @@ class StewartStepper():
         self.__en = (self.__en & ~0x01) | (en & 0x01)
 
     def update(self):
-        data = struct.pack("<BBBBffffff", self.__class__._HEADER, self.__class__._CFG_DEVID, self.__class__._CMD_GENERAL_CALL, self.__en, *self.__motors)
+        data = struct.pack("<BBBBiiiiii", self.__class__._HEADER, self.__class__._CFG_DEVID, self.__class__._CMD_GENERAL_CALL, self.__en, *self.__motors)
         data += self._crc32(data)
         self._writebus(data)
-        r = self._readbus(43)
+        r = self._readbus(44)
         if r is not None:
             if r[self.__class__._CMD_ID_INDEX] == self.__class__._CMD_GENERAL_CALL:
-                data = list(struct.unpack("<BBBfffffffffI", r))
-                self.position = data[3:9]
-                self.imu = data[9:12]
+                data = list(struct.unpack("<BBBBiiiiiifffI", r))
+                self.status = data[3]
+                self.position = data[4:10]
+                self.imu = data[10:13]
+                return True
+        return False
+
+    def calibrate(self):
+        data = struct.pack("<BBB", self.__class__._HEADER, self.__class__._CFG_DEVID, self.__class__._CMD_CALIB)
+        data += self._crc32(data)
+        self._writebus(data)
+        r = self._readbus(44)
+        if r is not None:
+            if r[self.__class__._CMD_ID_INDEX] == self.__class__._CMD_GENERAL_CALL:
+                data = list(struct.unpack("<BBBBiiiiiifffI", r))
+                self.status = data[3]
+                self.position = data[4:10]
+                self.imu = data[10:13]
+                return True
+        return False
+
+    def reference(self):
+        data = struct.pack("<BBB", self.__class__._HEADER, self.__class__._CFG_DEVID, self.__class__._CMD_SET_REF)
+        data += self._crc32(data)
+        self._writebus(data)
+        r = self._readbus(44)
+        if r is not None:
+            if r[self.__class__._CMD_ID_INDEX] == self.__class__._CMD_GENERAL_CALL:
+                data = list(struct.unpack("<BBBBiiiiiifffI", r))
+                self.status = data[3]
+                self.position = data[4:10]
+                self.imu = data[10:13]
                 return True
         return False
