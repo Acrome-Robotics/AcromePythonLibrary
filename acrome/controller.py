@@ -27,11 +27,13 @@ class Controller():
         self.__serial_settings = self.__ph.get_settings()
         self.__fw_file = None
         self.board_info = self.get_board_info()
+        self.__release_url = None
 
-        if parse_version(self.board_info["Hardware Version"]) < parse_version('2.0.0'):
-            self.__release_url = "https://api.github.com/repos/acrome-robotics/Acrome-Controller-Firmware/releases/{version}"
-        else:
-            self.__release_url = "https://api.github.com/repos/acrome-robotics/Acrome-Controller-Firmware-v2/releases/{version}"
+        if self.board_info is not None:
+            if parse_version(self.board_info["Hardware Version"]) < parse_version('2.0.0'):
+                self.__release_url = "https://api.github.com/repos/acrome-robotics/Acrome-Controller-Firmware/releases/{version}"
+            else:
+                self.__release_url = "https://api.github.com/repos/acrome-robotics/Acrome-Controller-Firmware-v2/releases/{version}"
 
     def __del__(self):
         try:
