@@ -1,7 +1,7 @@
 from acrome.premium import *
 import math
 import time
-
+'''
 port = "COM6"
 m = Master(port)
 
@@ -9,8 +9,13 @@ m = Master(port)
 m.attach(Premium(0))
 
 m.set_variables(0, [[Index.TorqueEn, 1]])
-
+'''
 a = 10
+
+def busy_wait_delay(seconds):
+    end_time = time.time() + seconds
+    while time.time() < end_time:
+        pass
 
 def x_up(t, initial_pos, inital_speed):
     pos = initial_pos + ((a * (t**2)) / 2) + inital_speed * t
@@ -29,16 +34,14 @@ count = 0
 start = time.time()
 print("-------------------YUKSELIYOR-------------------")
 for i in range(0,1000, 5):
-    m.set_variables(0, [[Index.GoalPosition, x_up(i*0.001, 0, 0)]])
-    print(x_up(i*0.001, 0, 0))
-    time.sleep(0.01)
-    print(i)
+    #m.set_variables(0, [[Index.GoalPosition, x_up(i*0.001, 0, 0)]])
+    busy_wait_delay(0.005)
     count+=1
     pass
 end = time.time()
-print(end - start)
+print("gecen sure " ,end - start)
 print("sayi : ", count)
-
+"""
 current_pos = x_up(i*0.001, 0, 0)
 
 current_speed = i * 0.001 * a
@@ -53,7 +56,7 @@ for j in range(0,3000,5):
 current_pos = x_const_speed(j*0.001 ,current_pos, current_speed)
 print("current pos: ", current_pos)
 print("speed: ", current_speed)
-"""print("-------------------DUSUYOR-------------------")
+print("-------------------DUSUYOR-------------------")
 for k in range(0,3000,5):
     #m.set_variables(0, [[Index.GoalPosition, x_down(k*0.001, current_pos, current_speed)]])
     #print(x_down(k*0.001, current_pos, current_speed))
@@ -67,6 +70,8 @@ print("current pos: ", current_pos)
 print("speed: ", current_speed)
 
 """
+
+
 
 
 
